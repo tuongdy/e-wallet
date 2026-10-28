@@ -1,24 +1,21 @@
 // ===================== CẤU HÌNH =====================
-// Hỏi bạn backend đường dẫn API thật rồi sửa dòng này
 const API_URL = "/api/transfer";
 
 // true  = giả lập server (test khi backend chưa xong)
 // false = gửi thật đến API_URL
 const USE_MOCK = true;
 
-// ===================== LẤY PHẦN TỬ HTML =====================
 const form = document.getElementById("transfer-form");
 const submitBtn = document.getElementById("submit-btn");
 const alertBox = document.getElementById("alert");
 const resultBox = document.getElementById("result");
 const resultJson = document.getElementById("result-json");
 
-// ===================== HÀM TIỆN ÍCH =====================
 function pad(n) {
   return String(n).padStart(2, "0");
 }
 
-// Trả về dạng "2026-10-21T19:00:00" (đúng định dạng nhóm thống nhất)
+// Trả về dạng "2026-10-21T19:00:00"
 function getTimestamp() {
   const d = new Date();
   return (
@@ -27,14 +24,14 @@ function getTimestamp() {
   );
 }
 
-// Tạo mã giao dịch dạng GD + số (VD: GD1793151098585)
+// Tạo mã giao dịch dạng GD + số 
 function generateTransactionId() {
   return "GD" + Date.now();
 }
 
 function showAlert(message, type) {
-  alertBox.textContent = message; // dùng textContent để tránh lỗi bảo mật XSS
-  alertBox.className = "alert " + type; // "success" hoặc "error"
+  alertBox.textContent = message; 
+  alertBox.className = "alert " + type; 
 }
 
 function hideAlert() {
@@ -54,7 +51,6 @@ function showFieldError(field, message) {
 }
 
 // ===================== KIỂM TRA DỮ LIỆU =====================
-// Trả về object lỗi, rỗng = hợp lệ
 function validate(data) {
   const errors = {};
   const namePattern = /^[A-Za-z0-9_]{3,30}$/;
