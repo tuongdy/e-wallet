@@ -1,13 +1,4 @@
-// 1. Dữ liệu giao dịch gốc
-const DEFAULT_TRANSACTION = {
-    transaction_id: "GD001",
-    sender: "USER_A",
-    receiver: "USER_B",
-    amount: 100000,
-    currency: "VND",
-    content: "Chuyen tien",
-    timestamp: "2026-10-21T19:00:00"
-};
+
 
 // Biến lưu giao dịch hiện tại và gói mã hóa hiện tại để phục vụ demo
 let currentTransaction = null;
@@ -44,20 +35,6 @@ async function verifyTransactionWithBackend() {
     }
 }
 
-// 2. Hàm giả lập chuỗi Base64 thực tế khi chạy độc lập (hoặc lấy từ Backend nếu đã ghép)
-function generateSimulatedEncryptedPackage(txData) {
-    const jsonStr = JSON.stringify(txData);
-    // Mã hóa Base64 giả lập bản mã dựa trên dữ liệu gốc
-    const rawB64 = btoa(unescape(encodeURIComponent(jsonStr)));
-
-    return {
-        encrypted_aes_key: "dK8vP2mX9qL4nR7wT1yU6jH3fB8vN4mX2cT9kL1pQxR7yVz5wM8nJ3bH6dF4aS9dF2gH5jK8lZ1xC4vB7nM0qW3eR6tY9uI2oP5==",
-        nonce: "rT5yU8iO2pA4sD6fG1hJ9k==",
-        tag: "zX3cV6bN8mQ1wE4rT7yU0i==",
-        ciphertext: rawB64.split('').reverse().join('') + "9vR8zL9kPq2XmW4aN7cT1y=="
-    };
-}
-
 // 3. Khởi chạy khi trang result.html tải xong
 document.addEventListener("DOMContentLoaded", async () => {
     await loadTransactionData();
@@ -77,35 +54,57 @@ async function loadTransactionData() {
         if (savedTx) {
             currentTransaction = JSON.parse(savedTx);
         } else {
-            currentTransaction = { ...DEFAULT_TRANSACTION };
+            currentTransaction = null;
         }
 
         if (savedEnc) {
             currentEncryptedPackage = JSON.parse(savedEnc);
         } else {
-            currentEncryptedPackage = generateSimulatedEncryptedPackage(currentTransaction);
+            currentEncryptedPackage = null;
         }
 
         if (savedHistory) {
             transactionHistory = JSON.parse(savedHistory);
         } else {
-            transactionHistory = [
-                {
-                    ...currentTransaction,
-                    status: "Thành công (Đã xác thực GCM)"
-                }
-            ];
-            localStorage.setItem("e_wallet_history", JSON.stringify(transactionHistory));
+            transactionHistory = [];
         }
     } catch (error) {
-        console.warn("Sử dụng dữ liệu mẫu mặc định:", error);
-        currentTransaction = { ...DEFAULT_TRANSACTION };
-        currentEncryptedPackage = generateSimulatedEncryptedPackage(currentTransaction);
+        console.error("Lỗi tải dữ liệu giao dịch:", error);
+        currentTransaction = null;
+        currentEncryptedPackage = null;
+        transactionHistory = [];
     }
 }
 
 // 5. Hiển thị thông tin giao dịch hợp lệ và bảng so sánh Client - Server
 function renderNormalResultView() {
+    if (!currentTransaction || !currentEncryptedPackage) {
+        document.getElementById("res-tx-id").textContent = "Chưa có giao dịch";
+        document.getElementById("res-sender").textContent = "-";
+        document.getElementById("res-receiver").textContent = "-";
+        document.getElementById("res-amount").textContent = "-";
+        document.getElementById("res-content").textContent = "-";
+        document.getElementById("res-timestamp").textContent = "-";
+
+        document.getElementById("tx-status-badge").textContent = "CHƯA CÓ GIAO DỊCH";
+        document.getElementById("tx-status-badge").className = "badge badge-warning";
+
+        document.getElementById("client-plaintext-box").textContent =
+            "Hãy tạo giao dịch tại /transfer trước.";
+        document.getElementById("server-decrypted-box").textContent =
+            "Chưa có dữ liệu giải mã.";
+        document.getElementById("integrity-banner").textContent =
+            "Chưa có giao dịch để xác thực.";
+
+        document.getElementById("mitm-plaintext-view").textContent =
+            "Chưa có dữ liệu giao dịch.";
+        document.getElementById("mitm-encrypted-view").textContent =
+            "Chưa có gói mã hóa.";
+        document.getElementById("attack-log-box").textContent =
+            "Hãy tạo giao dịch tại /transfer để bắt đầu kiểm thử.";
+
+        return;
+    }
 
     document.getElementById("res-tx-id").textContent = currentTransaction.transaction_id;
     document.getElementById("res-sender").textContent = currentTransaction.sender;
@@ -159,14 +158,17 @@ function renderNormalResultView() {
         "[Gói tin HTTP không mã hóa bị chặn]\n" + formattedJson;
 
     document.getElementById("mitm-encrypted-view").textContent =
-        "[Gói tin đã bảo vệ bằng AES-GCM + RSA-OAEP]\n" +
+        "[Gói dữ liệu được mã hóa tại Backend bằng AES-GCM + RSA-OAEP]\n" +
         JSON.stringify(currentEncryptedPackage, null, 2);
 
+
     document.getElementById("attack-log-box").textContent =
-        "[TRẠNG THÁI HỆ THỐNG: AN TOÀN]\n" +
-        "1. Client tạo khóa phiên AES-256 ngẫu nhiên (32 byte) và mã hóa giao dịch bằng chế độ AES-GCM.\n" +
-        "2. Khóa phiên AES được bọc an toàn bằng RSA-OAEP (Public Key 2048-bit của Server).\n" +
-        "3. Server dùng RSA Private Key khôi phục khóa AES -> Xác thực Tag hợp lệ -> Giải mã thành công!";
+        "[QUY TRÌNH MÃ HÓA VÀ XÁC THỰC TẠI BACKEND]\n" +
+        "1. Client gửi thông tin giao dịch đến Flask Backend qua API /api/transfer.\n" +
+        "2. Backend tạo khóa phiên AES-256 ngẫu nhiên và mã hóa dữ liệu bằng AES-GCM.\n" +
+        "3. Backend sử dụng RSA Public Key 2048-bit để mã hóa khóa phiên AES bằng RSA-OAEP.\n" +
+        "4. Backend trả về gói dữ liệu mã hóa gồm encrypted_data, encrypted_key, nonce và tag.\n" +
+        "5. Khi kiểm thử giải mã, Backend dùng RSA Private Key khôi phục khóa AES, xác thực GCM Tag và giải mã dữ liệu.";
 }
 
 // =========================================================================
@@ -429,35 +431,72 @@ function renderHistoryTable() {
 }
 
 // Hàm tạo nhanh một giao dịch mẫu mới để test lịch sử và sinh khóa phiên mới
-function addDemoTransaction() {
-    const randomId = "GD-" + Math.random().toString(16).substring(2, 8).toUpperCase();
+
+async function addDemoTransaction() {
     const amounts = [150000, 250000, 500000, 1200000];
-    const randomAmount = amounts[Math.floor(Math.random() * amounts.length)];
-    const nowIso = new Date().toISOString().split('.')[0];
+    const randomAmount = amounts[
+        Math.floor(Math.random() * amounts.length)
+    ];
 
-    const newTx = {
-        transaction_id: randomId,
-        sender: "USER_A",
-        receiver: "USER_B",
-        amount: randomAmount,
-        currency: "VND",
-        content: "Thanh toan hoa don " + randomId,
-        timestamp: nowIso
-    };
+    try {
+        const response = await fetch("/api/transfer", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                sender: "USER_A",
+                receiver: "USER_B",
+                amount: randomAmount,
+                currency: "VND",
+                content: "Giao dich mau tu Backend"
+            })
+        });
 
-    currentTransaction = newTx;
-    currentEncryptedPackage = generateSimulatedEncryptedPackage(newTx);
+        const result = await response.json();
 
-    transactionHistory.unshift({
-        ...newTx,
-        status: "Thành công (Đã xác thực GCM)"
-    });
+        if (!response.ok || !result.success) {
+            alert("Không thể tạo giao dịch: " + result.message);
+            return;
+        }
 
+        currentTransaction = result.transaction;
+        currentEncryptedPackage = result.encrypted_transaction;
 
-    localStorage.setItem("latest_transaction", JSON.stringify(currentTransaction));
-    localStorage.setItem("latest_encrypted_package", JSON.stringify(currentEncryptedPackage));
-    localStorage.setItem("e_wallet_history", JSON.stringify(transactionHistory));
+        localStorage.setItem(
+            "latest_transaction",
+            JSON.stringify(currentTransaction)
+        );
 
-    renderNormalResultView();
-    renderHistoryTable();
+        localStorage.setItem(
+            "latest_encrypted_package",
+            JSON.stringify(currentEncryptedPackage)
+        );
+
+        await verifyTransactionWithBackend();
+
+        const isVerified =
+            verifiedDecryptedTransaction !== null &&
+            JSON.stringify(verifiedDecryptedTransaction) ===
+            JSON.stringify(currentTransaction);
+
+        transactionHistory.unshift({
+            ...currentTransaction,
+            status: isVerified
+                ? "Thành công (Đã xác thực GCM)"
+                : "Chưa xác thực"
+        });
+
+        localStorage.setItem(
+            "e_wallet_history",
+            JSON.stringify(transactionHistory)
+        );
+
+        renderNormalResultView();
+        renderHistoryTable();
+
+    } catch (error) {
+        console.error("Lỗi tạo giao dịch:", error);
+        alert("Không thể kết nối Backend.");
+    }
 }
