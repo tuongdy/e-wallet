@@ -3,10 +3,12 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from flask import Flask, request, jsonify, render_template
-from crypto import encrypt_transaction, decrypt_transaction
+from crypto import encrypt_transaction, decrypt_transaction, test_wrong_private_key
 
 app = Flask(__name__)
 
+# Luu ma giao dich da xu ly trong phien chay demo
+processed_transaction_ids = set()
 
 @app.route("/")
 def home():
@@ -152,6 +154,82 @@ def decrypt_api():
             "success": False,
             "verified": False,
             "message": "Giai ma hoac xac thuc that bai"
+        }), 400
+
+
+@app.route("/api/test-wrong-key", methods=["POST"])
+def test_wrong_key_api():
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({
+            "success": False,
+            "message": "Du lieu JSON khong hop le"
+        }), 400
+
+    encrypted_package = data.get("encrypted_transaction")
+
+    if not isinstance(encrypted_package, dict):
+        return jsonify({
+            "success": False,
+            "message": "Thieu goi du lieu ma hoa"
+        }), 400
+
+    try:
+        result = test_wrong_private_key(encrypted_package)
+        return jsonify(result), 200
+
+    except (ValueError, KeyError, TypeError):
+        return jsonify({
+            "success": False,
+            "rejected": False,
+            "message": "Goi du lieu kiem thu khong hop le"
+        }), 400
+
+
+@app.route("/api/test-replay", methods=["POST"])
+def test_replay_api():
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({
+            "success": False,
+            "message": "Du lieu JSON khong hop le"
+        }), 400
+
+    encrypted_package = data.get("encrypted_transaction")
+
+    if not isinstance(encrypted_package, dict):
+        return jsonify({
+            "success": False,
+            "message": "Thieu goi du lieu ma hoa"
+        }), 400
+
+    try:
+        transaction = decrypt_transaction(encrypted_package)
+        transaction_id = transaction["transaction_id"]
+
+        if transaction_id in processed_transaction_ids:
+            return jsonify({
+                "success": False,
+                "replay_detected": True,
+                "message": "Replay Attack: Giao dich da duoc xu ly truoc do"
+            }), 409
+
+        processed_transaction_ids.add(transaction_id)
+
+        return jsonify({
+            "success": True,
+            "replay_detected": False,
+            "message": "Giao dich hop le, lan dau duoc ghi nhan",
+            "transaction_id": transaction_id
+        }), 200
+
+    except (ValueError, KeyError, TypeError):
+        return jsonify({
+            "success": False,
+            "replay_detected": False,
+            "message": "Goi du lieu ma hoa khong hop le"
         }), 400
 
 

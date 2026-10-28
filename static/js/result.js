@@ -174,97 +174,236 @@ function renderNormalResultView() {
 // =========================================================================
 
 // Kịch bản 1: Khôi phục luồng giao dịch hợp lệ bình thường
-function simulateNormalFlow() {
-    currentEncryptedPackage = generateSimulatedEncryptedPackage(currentTransaction);
+async function simulateNormalFlow() {
+    await loadTransactionData();
+    await verifyTransactionWithBackend();
     renderNormalResultView();
+    renderHistoryTable();
 }
 
 // Kịch bản 2: Hacker chặn gói tin trên mạng và sửa đổi bản mã (Ciphertext)
-function simulateTamperCiphertext() {
+
+async function simulateTamperCiphertext() {
+    const badge = document.getElementById("tx-status-badge");
+    const serverBox = document.getElementById("server-decrypted-box");
+    const banner = document.getElementById("integrity-banner");
+    const attackLog = document.getElementById("attack-log-box");
+
+    if (!localStorage.getItem("latest_encrypted_package")) {
+        attackLog.textContent =
+            "Chưa có gói mã hóa thật. Hãy tạo giao dịch tại /transfer trước.";
+        return;
+    }
 
     const tamperedPackage = { ...currentEncryptedPackage };
-    tamperedPackage.ciphertext = "HACKED_999999_" + tamperedPackage.ciphertext.substring(14);
 
+    // Thay đổi một byte của ciphertext thật
+    const binary = atob(tamperedPackage.encrypted_data);
+    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    bytes[0] = bytes[0] ^ 1;
+
+    tamperedPackage.encrypted_data = btoa(
+        Array.from(bytes, b => String.fromCharCode(b)).join("")
+    );
 
     document.getElementById("mitm-encrypted-view").textContent =
-        "[Gói tin đã bị Hacker sửa đổi]\n" +
+        "[Gói mã hóa đã bị thay đổi một byte]\n" +
         JSON.stringify(tamperedPackage, null, 2);
 
+    try {
+        const response = await fetch("/api/decrypt", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                encrypted_transaction: tamperedPackage
+            })
+        });
 
-    const badge = document.getElementById("tx-status-badge");
-    badge.textContent = "BỊ TỪ CHỐI (DỮ LIỆU BỊ SỬA ĐỔI)";
-    badge.className = "badge badge-danger";
+        const result = await response.json();
 
-    const serverBox = document.getElementById("server-decrypted-box");
-    serverBox.textContent =
-        "[LỖI GIẢI MÃ TẠI SERVER]\n" +
-        "ValueError: MAC check failed!\n\n" +
-        "=> Thuật toán AES-GCM phát hiện bản mã (ciphertext) không khớp với thẻ xác thực (tag).\n" +
-        "=> Server lập tức hủy bỏ và không thực hiện chuyển tiền";
-    serverBox.className = "code-box danger-border";
+        if (!response.ok && result.verified === false) {
+            badge.textContent = "PHÁT HIỆN CAN THIỆP BẢN MÃ";
+            badge.className = "badge badge-danger";
 
-    const banner = document.getElementById("integrity-banner");
-    banner.className = "verify-banner verify-err";
-    banner.textContent =
-        "CẢNH BÁO BẢO MẬT (TC08): Phát hiện hành vi can thiệp bản mã trên đường truyền! Giao dịch đã bị chặn.";
+            serverBox.textContent =
+                "Server từ chối giải mã gói dữ liệu đã bị sửa đổi.";
+            serverBox.className = "code-box danger-border";
 
-    document.getElementById("attack-log-box").textContent =
-        "[NHẬT KÝ PHÒNG THỦ - KỊCH BẢN SỬA ĐỔI CIPHERTEXT]\n" +
-        "- Hành vi của Hacker: Chặn gói tin JSON và thay đổi byte trong trường 'ciphertext' nhằm mục đích đổi số tiền.\n" +
-        "- Phản ứng của Server: Khôi phục được khóa AES nhưng khi gọi hàm decrypt_and_verify(), phép kiểm tra GHASH thất bại do Tag không khớp.\n" +
-        "- Kết quả: Báo lỗi 'ValueError: MAC check failed' và từ chối giao dịch.";
+            banner.className = "verify-banner verify-err";
+            banner.textContent =
+                "AES-GCM: Gói dữ liệu bị can thiệp đã bị Backend từ chối.";
+
+            attackLog.textContent =
+                "[KẾT QUẢ KIỂM THỬ BACKEND]\n" +
+                "HTTP Status: " + response.status + "\n" +
+                "Verified: " + result.verified + "\n" +
+                "Thông báo: " + result.message;
+        } else {
+            badge.textContent = "KIỂM TRA KHÔNG ĐẠT";
+            badge.className = "badge badge-warning";
+
+            attackLog.textContent =
+                "Backend không trả về kết quả từ chối như mong đợi:\n" +
+                JSON.stringify(result, null, 2);
+        }
+    } catch (error) {
+        badge.textContent = "LỖI KẾT NỐI";
+        badge.className = "badge badge-warning";
+
+        attackLog.textContent =
+            "Không thể kết nối Backend: " + error.message;
+    }
 }
+
 
 // Kịch bản 3: Hacker cố tình dùng Khóa riêng RSA giả mạo để lấy cắp khóa phiên AES
-function simulateWrongPrivateKey() {
+
+async function simulateWrongPrivateKey() {
     const badge = document.getElementById("tx-status-badge");
-    badge.textContent = "CHẶN TRUY CẬP KHÓA TRÁI PHÉP";
-    badge.className = "badge badge-warning";
-
     const serverBox = document.getElementById("server-decrypted-box");
-    serverBox.textContent =
-        "[MÔ PHỎNG TẠI MÁY CỦA KẺ TẤN CÔNG]\n" +
-        "ValueError: Incorrect decryption (PKCS#1 OAEP)\n\n" +
-        "=> Kẻ tấn công không có RSA Private Key của Server nên không thể giải mã trường 'encrypted_aes_key'.\n" +
-        "=> Khóa phiên AES-256 được bảo vệ an toàn tuyệt đối!";
-    serverBox.className = "code-box danger-border";
-
     const banner = document.getElementById("integrity-banner");
-    banner.className = "verify-banner verify-err";
-    banner.textContent =
-        "BẢO VỆ KHÓA THÀNH CÔNG (TC06): Khóa riêng RSA không tương ứng không thể khôi phục khóa phiên AES.";
+    const attackLog = document.getElementById("attack-log-box");
 
-    document.getElementById("attack-log-box").textContent =
-        "[NHẬT KÝ PHÒNG THỦ - KỊCH BẢN DÙNG SAI KHÓA RIÊNG RSA]\n" +
-        "- Hành vi của Hacker: Thu thập gói tin trên mạng và tự sinh cặp khóa RSA-2048 giả để thử giải mã 'encrypted_aes_key'.\n" +
-        "- Cơ chế bảo vệ: RSA-OAEP kiểm tra cấu trúc đệm SHA-256. Vì khóa riêng không khớp với khóa công khai của Server, quá trình giải mã thất bại ngay lập tức.\n" +
-        "- Kết quả: Kẻ tấn công không lấy được khóa AES, nội dung giao dịch vẫn an toàn.";
+    if (!localStorage.getItem("latest_encrypted_package")) {
+        attackLog.textContent =
+            "Chưa có gói mã hóa thật. Hãy tạo giao dịch tại /transfer trước.";
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/test-wrong-key", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                encrypted_transaction: currentEncryptedPackage
+            })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.rejected === true) {
+            badge.textContent = "RSA TỪ CHỐI KHÓA KHÔNG KHỚP";
+            badge.className = "badge badge-warning";
+
+            serverBox.textContent =
+                "Kiểm thử RSA-OAEP: Private Key không tương ứng " +
+                "không thể giải mã khóa phiên AES.";
+            serverBox.className = "code-box danger-border";
+
+            banner.className = "verify-banner verify-err";
+            banner.textContent =
+                "KIỂM THỬ THÀNH CÔNG: RSA-OAEP từ chối Private Key không khớp.";
+
+            attackLog.textContent =
+                "[KẾT QUẢ KIỂM THỬ BACKEND - RSA]\n" +
+                "HTTP Status: " + response.status + "\n" +
+                "Rejected: " + result.rejected + "\n" +
+                "Thông báo: " + result.message;
+        } else {
+            badge.textContent = "KIỂM TRA KHÔNG ĐẠT";
+            badge.className = "badge badge-danger";
+
+            attackLog.textContent =
+                "Backend không xác nhận việc từ chối khóa RSA sai:\n" +
+                JSON.stringify(result, null, 2);
+        }
+    } catch (error) {
+        badge.textContent = "LỖI KẾT NỐI";
+        badge.className = "badge badge-warning";
+
+        attackLog.textContent =
+            "Không thể kết nối Backend: " + error.message;
+    }
 }
+
 
 // Kịch bản 4: Hacker lưu gói tin mã hóa cũ và gửi lặp lại lên Server (Replay Attack)
-function simulateReplayAttack() {
+
+async function simulateReplayAttack() {
     const badge = document.getElementById("tx-status-badge");
-    badge.textContent = "TỪ CHỐI GIAO DỊCH LẶP (REPLAY)";
-    badge.className = "badge badge-danger";
-
     const serverBox = document.getElementById("server-decrypted-box");
-    serverBox.textContent =
-        "[CẢNH BÁO TẤN CÔNG PHÁT LẠI - REPLAY ATTACK]\n" +
-        `Mã giao dịch '${currentTransaction.transaction_id}' đã tồn tại trong lịch sử hệ thống!\n\n` +
-        "=> Server từ chối xử lý lại gói tin cũ để tránh trừ tiền hai lần.";
-    serverBox.className = "code-box danger-border";
-
     const banner = document.getElementById("integrity-banner");
-    banner.className = "verify-banner verify-err";
-    banner.textContent =
-        "NGĂN CHẶN REPLAY ATTACK (TC10): Phát hiện gói tin cũ bị gửi lại thông qua kiểm tra trùng mã giao dịch (transaction_id).";
+    const attackLog = document.getElementById("attack-log-box");
 
-    document.getElementById("attack-log-box").textContent =
-        "[NHẬT KÝ PHÒNG THỦ - KỊCH BẢN GỬI LẠI GIAO DỊCH CŨ]\n" +
-        "- Hành vi của Hacker: Sao chép nguyên vẹn gói tin mã hóa hợp lệ trước đó và gửi lại lên API '/api/transfer'.\n" +
-        "- Phản ứng của hệ thống: Đối chiếu 'transaction_id' và 'timestamp' với danh sách giao dịch đã xử lý.\n" +
-        "- Kết quả: Phát hiện trùng mã định danh '" + currentTransaction.transaction_id + "', hủy yêu cầu phát lại.";
+    const savedPackage = localStorage.getItem("latest_encrypted_package");
+
+    if (!savedPackage) {
+        attackLog.textContent =
+            "Chưa có gói mã hóa thật. Hãy tạo giao dịch tại /transfer trước.";
+        return;
+    }
+
+    try {
+        const encryptedPackage = JSON.parse(savedPackage);
+
+        // Gui cung mot goi ma hoa hai lan den Backend
+        const sendPackage = async () => {
+            const response = await fetch("/api/test-replay", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    encrypted_transaction: encryptedPackage
+                })
+            });
+
+            return {
+                status: response.status,
+                result: await response.json()
+            };
+        };
+
+        const first = await sendPackage();
+        const second = await sendPackage();
+
+        if (
+            first.status === 200 &&
+            first.result.replay_detected === false &&
+            second.status === 409 &&
+            second.result.replay_detected === true
+        ) {
+            badge.textContent = "PHÁT HIỆN REPLAY ATTACK";
+            badge.className = "badge badge-danger";
+
+            serverBox.textContent =
+                "Backend phát hiện transaction_id đã được ghi nhận " +
+                "và từ chối xử lý giao dịch gửi lại.";
+            serverBox.className = "code-box danger-border";
+
+            banner.className = "verify-banner verify-err";
+            banner.textContent =
+                "REPLAY ATTACK: Giao dịch gửi lại đã bị Backend từ chối.";
+
+            attackLog.textContent =
+                "[KẾT QUẢ KIỂM THỬ BACKEND - REPLAY]\n" +
+                "Lần 1 - HTTP Status: " + first.status + "\n" +
+                "Replay Detected: " + first.result.replay_detected + "\n\n" +
+                "Lần 2 - HTTP Status: " + second.status + "\n" +
+                "Replay Detected: " + second.result.replay_detected + "\n" +
+                "Thông báo: " + second.result.message;
+        } else {
+            badge.textContent = "CẦN KIỂM TRA KẾT QUẢ";
+            badge.className = "badge badge-warning";
+
+            attackLog.textContent =
+                "[KẾT QUẢ KIỂM THỬ BACKEND - REPLAY]\n" +
+                "Lần 1: HTTP " + first.status + "\n" +
+                JSON.stringify(first.result, null, 2) + "\n\n" +
+                "Lần 2: HTTP " + second.status + "\n" +
+                JSON.stringify(second.result, null, 2);
+        }
+    } catch (error) {
+        badge.textContent = "LỖI KIỂM THỬ";
+        badge.className = "badge badge-warning";
+
+        attackLog.textContent =
+            "Không thể kiểm thử Replay Attack: " + error.message;
+    }
 }
+
 
 // =========================================================================
 // QUẢN LÝ VÀ HIỂN THỊ BẢNG LỊCH SỬ GIAO DỊCH

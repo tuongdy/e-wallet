@@ -94,3 +94,31 @@ def decrypt_transaction(data):
 
     # Chuyen JSON ve dictionary
     return json.loads(plaintext.decode("utf-8"))
+
+
+def test_wrong_private_key(encrypted_package):
+    """Kiem thu giai ma khoa AES bang RSA Private Key khong khop."""
+
+    fake_private_key = RSA.generate(2048)
+
+    rsa_cipher = PKCS1_OAEP.new(
+        fake_private_key, hashAlgo=SHA256
+    )
+
+    encrypted_key = base64.b64decode(
+        encrypted_package["encrypted_key"]
+    )
+
+    try:
+        rsa_cipher.decrypt(encrypted_key)
+        return {
+            "success": False,
+            "rejected": False,
+            "message": "Canh bao: khoa RSA sai nhung khong bi tu choi"
+        }
+    except ValueError:
+        return {
+            "success": True,
+            "rejected": True,
+            "message": "RSA-OAEP tu choi Private Key khong khop"
+        }
