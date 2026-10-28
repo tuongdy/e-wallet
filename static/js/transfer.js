@@ -153,17 +153,35 @@ form.addEventListener("submit", async (event) => {
   submitBtn.disabled = true;
   submitBtn.textContent = "Đang gửi...";
 
+
   try {
     const result = await sendTransfer(payload);
     showAlert(result.message || "Chuyển tiền thành công!", "success");
+
+    // Lưu dữ liệu giao dịch thật từ Backend
+    if (result.success && result.encrypted_transaction) {
+      localStorage.setItem(
+        "latest_transaction",
+        JSON.stringify(result.transaction)
+      );
+
+      localStorage.setItem(
+        "latest_encrypted_package",
+        JSON.stringify(result.encrypted_transaction)
+      );
+    }
+
     resultJson.textContent = JSON.stringify(result, null, 2);
     resultBox.classList.remove("hidden");
     form.reset();
-    document.getElementById("sender").value = payload.sender; // giữ lại người gửi
+    document.getElementById("sender").value = payload.sender;
+
   } catch (error) {
     showAlert("Chuyển tiền thất bại: " + error.message, "error");
+
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = "Chuyển tiền";
   }
+
 });

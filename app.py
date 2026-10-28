@@ -16,6 +16,10 @@ def home():
 def transfer_page():
     return render_template("transfer.html")
 
+@app.route("/result")
+def result_page():
+    return render_template("result.html")
+
 @app.route("/api/health", methods=["GET"])
 def health():
     return jsonify({
@@ -102,14 +106,53 @@ def transfer():
     # Ma hoa giao dich bang AES + RSA
     encrypted_transaction = encrypt_transaction(transaction)
 
-       # 9. Tra ve ket qua giao dich da ma hoa (demo)
+    # 9. Tra ve ket qua giao dich da ma hoa (demo)
     return jsonify({
         "success": True,
         "status": "encrypted_demo",
         "message": "Giao dich hop le va da duoc ma hoa AES + RSA",
         "transaction_id": transaction["transaction_id"],
+        "transaction": transaction,
         "encrypted_transaction": encrypted_transaction
     }), 200
+
+
+@app.route("/api/decrypt", methods=["POST"])
+def decrypt_api():
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({
+            "success": False,
+            "verified": False,
+            "message": "Du lieu JSON khong hop le"
+        }), 400
+
+    encrypted_package = data.get("encrypted_transaction")
+
+    if not isinstance(encrypted_package, dict):
+        return jsonify({
+            "success": False,
+            "verified": False,
+            "message": "Thieu goi du lieu ma hoa"
+        }), 400
+
+    try:
+        decrypted_transaction = decrypt_transaction(encrypted_package)
+
+        return jsonify({
+            "success": True,
+            "verified": True,
+            "message": "Giai ma va xac thuc AES-GCM thanh cong",
+            "decrypted_transaction": decrypted_transaction
+        }), 200
+
+    except (ValueError, KeyError, TypeError) as error:
+        return jsonify({
+            "success": False,
+            "verified": False,
+            "message": "Giai ma hoac xac thuc that bai"
+        }), 400
 
 
 if __name__ == "__main__":
