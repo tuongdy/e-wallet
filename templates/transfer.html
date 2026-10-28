@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chuyển tiền - E-Wallet</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/transfer.css') }}">
+</head>
+<body>
+  <main class="container">
+    <h1>Chuyển tiền</h1>
+
+    <!-- Vùng hiển thị thông báo thành công / lỗi -->
+    <div id="alert" class="alert hidden" role="alert"></div>
+
+    <form id="transfer-form" novalidate>
+      <div class="form-group">
+        <label for="sender">Người gửi <span class="required">*</span></label>
+        <input type="text" id="sender" name="sender" value="USER_A" placeholder="VD: USER_A">
+        <small class="error" data-error-for="sender"></small>
+      </div>
+
+      <div class="form-group">
+        <label for="receiver">Người nhận <span class="required">*</span></label>
+        <input type="text" id="receiver" name="receiver" placeholder="VD: USER_B">
+        <small class="error" data-error-for="receiver"></small>
+      </div>
+
+      <div class="form-group">
+        <label for="amount">Số tiền <span class="required">*</span></label>
+        <input type="number" id="amount" name="amount" min="1" step="1" placeholder="VD: 100000">
+        <small class="error" data-error-for="amount"></small>
+      </div>
+
+      <div class="form-group">
+        <label for="currency">Loại tiền</label>
+        <select id="currency" name="currency">
+          <option value="VND" selected>VND</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="content">Nội dung chuyển khoản</label>
+        <input type="text" id="content" name="content" maxlength="200" placeholder="VD: Chuyen tien">
+        <small class="error" data-error-for="content"></small>
+      </div>
+
+      <button type="submit" id="submit-btn">Chuyển tiền</button>
+    </form>
+
+    <!-- Hiển thị JSON vừa gửi để demo/trình bày -->
+    <section id="result" class="result hidden">
+      <h2>Dữ liệu giao dịch đã gửi</h2>
+      <pre id="result-json"></pre>
+    </section>
+  </main>
+
+  <script src="{{ url_for('static', filename='js/transfer.js') }}"></script>
+</body>
+</html>
