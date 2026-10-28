@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from flask import Flask, request, jsonify
+from crypto import encrypt_transaction, decrypt_transaction
 
 app = Flask(__name__)
 
@@ -18,7 +19,7 @@ def health():
         "success": True,
         "status": "ok",
         "service": "e-wallet-backend",
-        "encryption_integrated": False
+        "encryption_integrated": True
     }), 200
 
 
@@ -95,12 +96,16 @@ def transfer():
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
-    # 9. Tra ve ket qua kiem tra (chua chuyen tien)
+    # Ma hoa giao dich bang AES + RSA
+    encrypted_transaction = encrypt_transaction(transaction)
+
+       # 9. Tra ve ket qua giao dich da ma hoa (demo)
     return jsonify({
         "success": True,
-        "status": "validated_demo",
-        "message": "Thong tin giao dich hop le",
-        "transaction": transaction
+        "status": "encrypted_demo",
+        "message": "Giao dich hop le va da duoc ma hoa AES + RSA",
+        "transaction_id": transaction["transaction_id"],
+        "encrypted_transaction": encrypted_transaction
     }), 200
 
 
