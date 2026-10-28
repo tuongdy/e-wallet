@@ -2,7 +2,7 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from crypto import encrypt_transaction, decrypt_transaction
 
 app = Flask(__name__)
@@ -12,6 +12,9 @@ app = Flask(__name__)
 def home():
     return "E-Wallet Running"
 
+@app.route("/transfer")
+def transfer_page():
+    return render_template("transfer.html")
 
 @app.route("/api/health", methods=["GET"])
 def health():
