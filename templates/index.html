@@ -1,0 +1,226 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrueWallet | Ví điện tử</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div class="app-container">
+
+        <!-- Thanh điều hướng -->
+        <aside class="sidebar">
+            <a href="{{ url_for('home') }}" class="brand">
+                <div class="brand-icon">T</div>
+                <span>True<span class="brand-highlight">Wallet</span></span>
+            </a>
+
+            <div class="nav-label">MENU CHÍNH</div>
+
+            <nav class="navigation">
+                <a href="{{ url_for('home') }}" class="nav-item active">
+                    <span class="nav-icon">▦</span>
+                    <span>Tổng quan</span>
+                </a>
+
+                <a href="{{ url_for('transfer') }}" class="nav-item">
+                    <span class="nav-icon">↗</span>
+                    <span>Chuyển tiền</span>
+                </a>
+
+                <a href="{{ url_for('encryption') }}" class="nav-item">
+                    <span class="nav-icon">♢</span>
+                    <span>Mã hóa AES + RSA</span>
+                </a>
+
+                <a href="{{ url_for('result') }}" class="nav-item">
+                    <span class="nav-icon">▤</span>
+                    <span>Kết quả giao dịch</span>
+                </a>
+            </nav>
+
+            <div class="security-card">
+                <div class="security-icon">◆</div>
+                <h3>Bảo mật giao dịch</h3>
+                <p>Minh họa mô hình mã hóa lai AES + RSA.</p>
+                <a href="{{ url_for('encryption') }}">Tìm hiểu thêm →</a>
+            </div>
+
+            <a href="{{ url_for('logout') }}" class="logout-link">
+                <span>⇥</span> Đăng xuất
+            </a>
+        </aside>
+
+        <!-- Nội dung chính -->
+        <main class="main-content">
+
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">VÍ ĐIỆN TỬ THÔNG MINH</p>
+                    <h1>Tổng quan tài khoản</h1>
+                </div>
+
+                <div class="profile">
+                    <div class="notification">♧</div>
+                    <div class="avatar">
+                        {{ (username or 'U')[0]|upper }}
+                    </div>
+                    <div class="profile-info">
+                        <strong>{{ username or 'Người dùng' }}</strong>
+                        <span>Tài khoản demo</span>
+                    </div>
+                </div>
+            </header>
+
+            <section class="welcome-banner">
+                <div class="welcome-content">
+                    <span class="welcome-tag">✦ CHÀO MỪNG ĐẾN VỚI TRUEWALLET</span>
+                    <h2>Giao dịch thông minh.<br><span>An toàn từ bên trong.</span></h2>
+                    <p>
+                        Khám phá mô hình bảo vệ dữ liệu giao dịch bằng
+                        công nghệ mã hóa lai AES và RSA.
+                    </p>
+
+                    <a href="{{ url_for('transfer') }}" class="btn-primary">
+                        ↗ &nbsp; Bắt đầu chuyển tiền
+                    </a>
+                </div>
+
+                <div class="banner-visual" aria-hidden="true">
+                    <div class="orbit orbit-one"></div>
+                    <div class="orbit orbit-two"></div>
+                    <div class="wallet-illustration">
+                        <div class="wallet-top">
+                            <span>TRUEWALLET</span>
+                            <span>✦</span>
+                        </div>
+                        <div class="wallet-chip"></div>
+                        <div class="wallet-number">•••• &nbsp; •••• &nbsp; ••••</div>
+                        <div class="wallet-bottom">
+                            <span>SECURE WALLET</span>
+                            <span>TW</span>
+                        </div>
+                    </div>
+                    <div class="floating-lock">♢</div>
+                </div>
+            </section>
+
+            <!-- Thẻ thông tin -->
+            <section class="section-block">
+                <div class="section-heading">
+                    <div>
+                        <h2>Thông tin tài khoản</h2>
+                        <p>Các thông tin minh họa của ví điện tử</p>
+                    </div>
+                    <span class="demo-badge"><span></span> DEMO</span>
+                </div>
+
+                <div class="stats-grid">
+                    <article class="stat-card balance-card">
+                        <div class="stat-top">
+                            <span class="stat-icon purple">₫</span>
+                            <span class="stat-caption">SỐ DƯ MINH HỌA</span>
+                        </div>
+                        <h3>10.000.000 <small>VNĐ</small></h3>
+                        <p>Số liệu mẫu, không phải tiền thật</p>
+                    </article>
+
+                    <article class="stat-card">
+                        <div class="stat-top">
+                            <span class="stat-icon cyan">↗</span>
+                            <span class="stat-caption">CHUYỂN TIỀN</span>
+                        </div>
+                        <h3>Giao dịch nhanh</h3>
+                        <p>Nhập thông tin và tạo giao dịch demo</p>
+                        <a href="{{ url_for('transfer') }}" class="text-link">
+                            Chuyển tiền ngay →
+                        </a>
+                    </article>
+
+                    <article class="stat-card">
+                        <div class="stat-top">
+                            <span class="stat-icon green">♢</span>
+                            <span class="stat-caption">BẢO MẬT</span>
+                        </div>
+                        <h3>AES + RSA</h3>
+                        <p>Mô hình mã hóa dữ liệu giao dịch</p>
+                        <a href="{{ url_for('encryption') }}" class="text-link">
+                            Xem quy trình →
+                        </a>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Các chức năng chính -->
+            <section class="section-block">
+                <div class="section-heading">
+                    <div>
+                        <h2>Chức năng chính</h2>
+                        <p>Truy cập nhanh các tính năng của TrueWallet</p>
+                    </div>
+                </div>
+
+                <div class="features-grid">
+                    <a href="{{ url_for('transfer') }}" class="feature-card">
+                        <div class="feature-icon purple">↗</div>
+                        <div>
+                            <h3>Chuyển tiền</h3>
+                            <p>Nhập người nhận, số tài khoản và số tiền.</p>
+                        </div>
+                        <span class="feature-arrow">→</span>
+                    </a>
+
+                    <a href="{{ url_for('encryption') }}" class="feature-card">
+                        <div class="feature-icon cyan">⌑</div>
+                        <div>
+                            <h3>Quá trình mã hóa</h3>
+                            <p>Quan sát dữ liệu gốc, bản mã AES và khóa AES được RSA bảo vệ.</p>
+                        </div>
+                        <span class="feature-arrow">→</span>
+                    </a>
+
+                    <a href="{{ url_for('result') }}" class="feature-card">
+                        <div class="feature-icon green">▤</div>
+                        <div>
+                            <h3>Kết quả giao dịch</h3>
+                            <p>Xem thông tin giao dịch demo gần nhất.</p>
+                        </div>
+                        <span class="feature-arrow">→</span>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Giao dịch gần đây -->
+            <section class="section-block">
+                <div class="section-heading">
+                    <div>
+                        <h2>Giao dịch gần đây</h2>
+                        <p>Khu vực xem lịch sử giao dịch demo</p>
+                    </div>
+                    <a href="{{ url_for('result') }}" class="text-link">Xem kết quả →</a>
+                </div>
+
+                <div class="transaction-panel">
+                    <div class="empty-state">
+                        <div class="empty-icon">▤</div>
+                        <h3>Chưa có giao dịch được hiển thị</h3>
+                        <p>Các giao dịch sẽ xuất hiện sau khi bạn thực hiện thao tác demo.</p>
+                        <a href="{{ url_for('transfer') }}" class="btn-secondary">
+                            Tạo giao dịch demo
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="footer">
+                <span>© 2026 TrueWallet — Dự án học tập về mã hóa lai AES + RSA.</span>
+                <span class="footer-security">◆ MÔI TRƯỜNG DEMO</span>
+            </footer>
+
+        </main>
+    </div>
+</body>
+</html>

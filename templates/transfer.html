@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TrueWallet | Chuyển tiền</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f7fc;color:#192440}
+.layout{display:flex;min-height:100vh}
+aside{width:230px;background:#111e3b;color:white;padding:28px 18px;flex-shrink:0}
+.logo{font-size:24px;font-weight:bold;margin:0 0 35px 8px}.logo span{color:#7895ff}
+nav a{display:block;padding:14px;margin:6px 0;border-radius:9px;color:#d5def1;text-decoration:none}
+nav a:hover,nav a.active{background:#293b62;color:white}
+main{flex:1;min-width:0}
+header{background:white;padding:22px 30px;border-bottom:1px solid #e5eaf3}
+.content{padding:30px;max-width:850px;margin:auto}
+.muted{color:#78859b;line-height:1.6}
+.card{background:white;border:1px solid #e5eaf3;border-radius:16px;padding:26px;margin-top:22px}
+label{display:block;font-weight:bold;font-size:14px;margin-top:18px}
+input,textarea,select{width:100%;padding:13px;border:1px solid #d7deea;border-radius:8px;margin-top:8px;font:inherit}
+textarea{min-height:90px;resize:vertical}
+.btn{display:inline-block;background:#315efb;color:white;text-decoration:none;border:0;border-radius:9px;padding:13px 18px;cursor:pointer;font-weight:bold}
+.btn:hover{background:#244bd8}
+.secondary{background:#edf1ff;color:#315efb}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.notice{background:#edf3ff;border-radius:10px;padding:15px;font-size:13px;line-height:1.6;margin-top:18px}
+@media(max-width:800px){.layout{display:block}aside{width:100%;padding:16px}.logo{margin-bottom:15px}nav{display:flex;overflow-x:auto}nav a{white-space:nowrap;font-size:13px}.content{padding:18px}}
+
+
+/* ===== PREMIUM DARK MODE ===== */
+:root {
+    --bg: #121212;
+    --panel: #212121;
+    --panel-light: #2b2b32;
+    --border: #3b3b46;
+    --text: #f5f5fa;
+    --muted: #b7b7c8;
+    --neon: #8a2be2;
+    --cyan: #00e5ff;
+    --success: #36e6a2;
+}
+
+body {
+    background: var(--bg) !important;
+    color: var(--text) !important;
+}
+
+aside,
+.sidebar {
+    background: #17171d !important;
+    color: var(--text) !important;
+    border-right: 1px solid var(--border);
+}
+
+.logo span {
+    color: var(--cyan) !important;
+}
+
+nav a,
+.menu a {
+    color: var(--muted) !important;
+}
+
+nav a:hover,
+nav a.active,
+.menu a:hover,
+.menu a.active {
+    background: #35204d !important;
+    color: white !important;
+    border: 1px solid #7040a0;
+}
+
+header,
+.topbar {
+    background: #1b1b21 !important;
+    color: var(--text) !important;
+    border-color: var(--border) !important;
+}
+
+.card,
+.stat-card,
+.table-card,
+.function-card,
+.step,
+.balance-card,
+.security-box,
+.notice {
+    background: var(--panel) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border) !important;
+}
+
+.balance-card,
+.balance {
+    background: linear-gradient(135deg, #241333, #42206b) !important;
+    color: white !important;
+}
+
+h1, h2, h3, strong, label {
+    color: var(--text);
+}
+
+p,
+.muted,
+.note,
+th,
+td:first-child {
+    color: var(--muted);
+}
+
+input,
+textarea,
+select {
+    background: #18181e !important;
+    color: var(--text) !important;
+    border: 1px solid #494052 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #88889a;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: 2px solid var(--neon);
+    border-color: var(--cyan) !important;
+}
+
+.btn,
+button {
+    background: linear-gradient(135deg, #8a2be2, #5b35cf) !important;
+    color: white !important;
+    border: 1px solid #a66aff !important;
+    transition: 0.2s;
+}
+
+.btn:hover,
+button:hover {
+    background: linear-gradient(135deg, #a64dff, #654bff) !important;
+    box-shadow: 0 0 16px #8a2be255;
+}
+
+.btn-light,
+.secondary {
+    background: #24242d !important;
+    color: var(--cyan) !important;
+    border: 1px solid #00e5ff66 !important;
+}
+
+.function-icon,
+.tag {
+    background: #35204d !important;
+    color: var(--cyan) !important;
+}
+
+table th,
+table td {
+    border-color: var(--border) !important;
+}
+
+.status {
+    background: #12382e !important;
+    color: var(--success) !important;
+}
+
+.footer,
+footer {
+    color: #9292a5 !important;
+}
+
+a {
+    transition: color 0.2s, background 0.2s;
+}
+
+
+</style>
+</head>
+<body>
+<div class="layout">
+<aside>
+  <div class="logo">True<span>Wallet</span></div>
+  <nav>
+    <a href="/">▦ Tổng quan</a>
+    <a class="active" href="/transfer">⇄ Chuyển tiền</a>
+    <a href="/encryption">⬡ Mã hóa AES + RSA</a>
+    <a href="/result">◷ Kết quả giao dịch</a>
+  </nav>
+</aside>
+
+<main>
+<header><strong>TrueWallet / Chuyển tiền</strong></header>
+<div class="content">
+  <h1>Chuyển tiền</h1>
+  <p class="muted">Nhập thông tin giao dịch để gửi yêu cầu xử lý.</p>
+
+  <form class="card" method="POST" action="/transfer">
+    <label for="sender">Tên người gửi</label>
+    <input id="sender" name="sender" type="text" placeholder="Nhập tên của bạn" required maxlength="100">
+
+    <label for="recipient">Tên người nhận</label>
+    <input id="recipient" name="recipient" type="text" placeholder="Ví dụ: Nguyễn Minh Anh" required maxlength="100">
+
+    <label for="account">Số tài khoản người nhận</label>
+    <input id="account" name="account" type="text" placeholder="Nhập số tài khoản demo" required maxlength="30">
+
+    <label for="amount">Số tiền (VNĐ)</label>
+    <input id="amount" name="amount" type="number" min="1000" max="1000000000" step="1000" placeholder="Ví dụ: 100000" required>
+
+    <label for="message">Nội dung chuyển tiền</label>
+    <textarea id="message" name="message" maxlength="250" placeholder="Nhập nội dung giao dịch"></textarea>
+
+    <div class="notice">
+      <strong>Thông tin bảo mật</strong><br>
+      Khi được tích hợp backend, dữ liệu giao dịch sẽ được chuyển đến mô-đun xử lý và mã hóa. Không nhập thông tin tài khoản hoặc dữ liệu tài chính thật vào bản demo.
+    </div>
+
+    <div class="actions">
+      <button class="btn" type="submit">Xác nhận giao dịch</button>
+      <a class="btn secondary" href="/">Quay lại</a>
+    </div>
+  </form>
+</div>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,232 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TrueWallet | Kết quả giao dịch</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f7fc;color:#192440}
+.layout{display:flex;min-height:100vh}
+aside{width:230px;background:#111e3b;color:white;padding:28px 18px;flex-shrink:0}
+.logo{font-size:24px;font-weight:bold;margin:0 0 35px 8px}.logo span{color:#7895ff}
+nav a{display:block;padding:14px;margin:6px 0;border-radius:9px;color:#d5def1;text-decoration:none}
+nav a:hover,nav a.active{background:#293b62;color:white}
+main{flex:1;min-width:0}
+header{background:white;padding:22px 30px;border-bottom:1px solid #e5eaf3}
+.content{padding:30px;max-width:900px;margin:auto}
+.muted{color:#78859b;line-height:1.7}
+.card{background:white;border:1px solid #e5eaf3;border-radius:16px;padding:25px;margin-top:22px}
+.status{background:#fff4dc;color:#986b10;padding:12px 15px;border-radius:9px;display:inline-block;font-weight:bold;font-size:14px}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+td{padding:14px 8px;border-bottom:1px solid #edf0f6;font-size:14px;overflow-wrap:anywhere}
+td:first-child{color:#78859b;width:42%}
+.btn{display:inline-block;background:#315efb;color:white;text-decoration:none;border:0;border-radius:9px;padding:12px 18px;font-weight:bold}
+.secondary{background:#edf1ff;color:#315efb}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+@media(max-width:800px){.layout{display:block}aside{width:100%;padding:16px}.logo{margin-bottom:15px}nav{display:flex;overflow-x:auto}nav a{white-space:nowrap;font-size:13px}.content{padding:18px}}
+
+
+/* ===== PREMIUM DARK MODE ===== */
+:root {
+    --bg: #121212;
+    --panel: #212121;
+    --panel-light: #2b2b32;
+    --border: #3b3b46;
+    --text: #f5f5fa;
+    --muted: #b7b7c8;
+    --neon: #8a2be2;
+    --cyan: #00e5ff;
+    --success: #36e6a2;
+}
+
+body {
+    background: var(--bg) !important;
+    color: var(--text) !important;
+}
+
+aside,
+.sidebar {
+    background: #17171d !important;
+    color: var(--text) !important;
+    border-right: 1px solid var(--border);
+}
+
+.logo span {
+    color: var(--cyan) !important;
+}
+
+nav a,
+.menu a {
+    color: var(--muted) !important;
+}
+
+nav a:hover,
+nav a.active,
+.menu a:hover,
+.menu a.active {
+    background: #35204d !important;
+    color: white !important;
+    border: 1px solid #7040a0;
+}
+
+header,
+.topbar {
+    background: #1b1b21 !important;
+    color: var(--text) !important;
+    border-color: var(--border) !important;
+}
+
+.card,
+.stat-card,
+.table-card,
+.function-card,
+.step,
+.balance-card,
+.security-box,
+.notice {
+    background: var(--panel) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border) !important;
+}
+
+.balance-card,
+.balance {
+    background: linear-gradient(135deg, #241333, #42206b) !important;
+    color: white !important;
+}
+
+h1, h2, h3, strong, label {
+    color: var(--text);
+}
+
+p,
+.muted,
+.note,
+th,
+td:first-child {
+    color: var(--muted);
+}
+
+input,
+textarea,
+select {
+    background: #18181e !important;
+    color: var(--text) !important;
+    border: 1px solid #494052 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #88889a;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: 2px solid var(--neon);
+    border-color: var(--cyan) !important;
+}
+
+.btn,
+button {
+    background: linear-gradient(135deg, #8a2be2, #5b35cf) !important;
+    color: white !important;
+    border: 1px solid #a66aff !important;
+    transition: 0.2s;
+}
+
+.btn:hover,
+button:hover {
+    background: linear-gradient(135deg, #a64dff, #654bff) !important;
+    box-shadow: 0 0 16px #8a2be255;
+}
+
+.btn-light,
+.secondary {
+    background: #24242d !important;
+    color: var(--cyan) !important;
+    border: 1px solid #00e5ff66 !important;
+}
+
+.function-icon,
+.tag {
+    background: #35204d !important;
+    color: var(--cyan) !important;
+}
+
+table th,
+table td {
+    border-color: var(--border) !important;
+}
+
+.status {
+    background: #12382e !important;
+    color: var(--success) !important;
+}
+
+.footer,
+footer {
+    color: #9292a5 !important;
+}
+
+a {
+    transition: color 0.2s, background 0.2s;
+}
+
+
+</style>
+</head>
+<body>
+<div class="layout">
+<aside>
+  <div class="logo">True<span>Wallet</span></div>
+  <nav>
+    <a href="/">▦ Tổng quan</a>
+    <a href="/transfer">⇄ Chuyển tiền</a>
+    <a href="/encryption">⬡ Mã hóa AES + RSA</a>
+    <a class="active" href="/result">◷ Kết quả giao dịch</a>
+  </nav>
+</aside>
+
+<main>
+<header><strong>TrueWallet / Kết quả giao dịch</strong></header>
+<div class="content">
+  <h1>Kết quả giao dịch</h1>
+  <p class="muted">Thông tin được hiển thị từ kết quả xử lý của ứng dụng.</p>
+
+  <section class="card">
+    {% if result is defined and result %}
+      <div class="status">
+        {{ result.status | default('Đã nhận kết quả') }}
+      </div>
+
+      <h2 style="margin-top:22px">Chi tiết giao dịch</h2>
+      <table>
+        <tr><td>Mã giao dịch</td><td>{{ result.transaction_id | default('Chưa cung cấp') }}</td></tr>
+        <tr><td>Người gửi</td><td>{{ result.sender | default('Chưa cung cấp') }}</td></tr>
+        <tr><td>Người nhận</td><td>{{ result.recipient | default('Chưa cung cấp') }}</td></tr>
+        <tr><td>Số tiền</td><td>{{ result.amount | default('Chưa cung cấp') }} VNĐ</td></tr>
+        <tr><td>Nội dung</td><td>{{ result.message | default('Không có') }}</td></tr>
+        <tr><td>Kết quả mã hóa</td><td>{{ result.encryption_status | default('Chưa cung cấp') }}</td></tr>
+      </table>
+    {% else %}
+      <div class="status">Chưa có dữ liệu giao dịch</div>
+      <h2 style="margin-top:22px">Chưa nhận được kết quả</h2>
+      <p class="muted">
+        Sau khi gửi biểu mẫu chuyển tiền và backend xử lý xong,
+        thông tin giao dịch sẽ được hiển thị tại đây.
+      </p>
+    {% endif %}
+
+    <div class="actions">
+      <a class="btn" href="/transfer">Tạo giao dịch demo</a>
+      <a class="btn secondary" href="/">Về trang chủ</a>
+    </div>
+  </section>
+</div>
+</main>
+</div>
+</body>
+</html>

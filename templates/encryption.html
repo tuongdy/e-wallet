@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TrueWallet | Mã hóa AES + RSA</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f7fc;color:#192440}
+.layout{display:flex;min-height:100vh}
+aside{width:230px;background:#111e3b;color:white;padding:28px 18px;flex-shrink:0}
+.logo{font-size:24px;font-weight:bold;margin:0 0 35px 8px}.logo span{color:#7895ff}
+nav a{display:block;padding:14px;margin:6px 0;border-radius:9px;color:#d5def1;text-decoration:none}
+nav a:hover,nav a.active{background:#293b62;color:white}
+main{flex:1;min-width:0}
+header{background:white;padding:22px 30px;border-bottom:1px solid #e5eaf3}
+.content{padding:30px;max-width:1050px;margin:auto}
+.muted{color:#78859b;line-height:1.7}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px}
+.card{background:white;border:1px solid #e5eaf3;border-radius:16px;padding:24px}
+.tag{display:inline-block;background:#edf1ff;color:#315efb;padding:7px 10px;border-radius:20px;font-size:12px;font-weight:bold}
+.flow{display:flex;align-items:stretch;gap:12px;margin:24px 0;flex-wrap:wrap}
+.step{flex:1;min-width:140px;background:white;border:1px solid #e5eaf3;border-radius:12px;padding:18px}
+.number{font-size:24px;color:#315efb;font-weight:bold;margin-bottom:10px}
+.notice{background:#fff6df;padding:16px;border-radius:10px;font-size:13px;line-height:1.7}
+.btn{display:inline-block;background:#315efb;color:white;text-decoration:none;border:0;border-radius:9px;padding:12px 18px;font-weight:bold}
+@media(max-width:800px){.layout{display:block}aside{width:100%;padding:16px}.logo{margin-bottom:15px}nav{display:flex;overflow-x:auto}nav a{white-space:nowrap;font-size:13px}.content{padding:18px}.grid{grid-template-columns:1fr}}
+
+
+/* ===== PREMIUM DARK MODE ===== */
+:root {
+    --bg: #121212;
+    --panel: #212121;
+    --panel-light: #2b2b32;
+    --border: #3b3b46;
+    --text: #f5f5fa;
+    --muted: #b7b7c8;
+    --neon: #8a2be2;
+    --cyan: #00e5ff;
+    --success: #36e6a2;
+}
+
+body {
+    background: var(--bg) !important;
+    color: var(--text) !important;
+}
+
+aside,
+.sidebar {
+    background: #17171d !important;
+    color: var(--text) !important;
+    border-right: 1px solid var(--border);
+}
+
+.logo span {
+    color: var(--cyan) !important;
+}
+
+nav a,
+.menu a {
+    color: var(--muted) !important;
+}
+
+nav a:hover,
+nav a.active,
+.menu a:hover,
+.menu a.active {
+    background: #35204d !important;
+    color: white !important;
+    border: 1px solid #7040a0;
+}
+
+header,
+.topbar {
+    background: #1b1b21 !important;
+    color: var(--text) !important;
+    border-color: var(--border) !important;
+}
+
+.card,
+.stat-card,
+.table-card,
+.function-card,
+.step,
+.balance-card,
+.security-box,
+.notice {
+    background: var(--panel) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border) !important;
+}
+
+.balance-card,
+.balance {
+    background: linear-gradient(135deg, #241333, #42206b) !important;
+    color: white !important;
+}
+
+h1, h2, h3, strong, label {
+    color: var(--text);
+}
+
+p,
+.muted,
+.note,
+th,
+td:first-child {
+    color: var(--muted);
+}
+
+input,
+textarea,
+select {
+    background: #18181e !important;
+    color: var(--text) !important;
+    border: 1px solid #494052 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #88889a;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: 2px solid var(--neon);
+    border-color: var(--cyan) !important;
+}
+
+.btn,
+button {
+    background: linear-gradient(135deg, #8a2be2, #5b35cf) !important;
+    color: white !important;
+    border: 1px solid #a66aff !important;
+    transition: 0.2s;
+}
+
+.btn:hover,
+button:hover {
+    background: linear-gradient(135deg, #a64dff, #654bff) !important;
+    box-shadow: 0 0 16px #8a2be255;
+}
+
+.btn-light,
+.secondary {
+    background: #24242d !important;
+    color: var(--cyan) !important;
+    border: 1px solid #00e5ff66 !important;
+}
+
+.function-icon,
+.tag {
+    background: #35204d !important;
+    color: var(--cyan) !important;
+}
+
+table th,
+table td {
+    border-color: var(--border) !important;
+}
+
+.status {
+    background: #12382e !important;
+    color: var(--success) !important;
+}
+
+.footer,
+footer {
+    color: #9292a5 !important;
+}
+
+a {
+    transition: color 0.2s, background 0.2s;
+}
+
+
+</style>
+</head>
+<body>
+<div class="layout">
+<aside>
+  <div class="logo">True<span>Wallet</span></div>
+  <nav>
+    <a href="/">▦ Tổng quan</a>
+    <a href="/transfer">⇄ Chuyển tiền</a>
+    <a class="active" href="/encryption">⬡ Mã hóa AES + RSA</a>
+    <a href="/result">◷ Kết quả giao dịch</a>
+  </nav>
+</aside>
+
+<main>
+<header><strong>TrueWallet / Trung tâm bảo mật</strong></header>
+<div class="content">
+  <h1>Mô hình mã hóa lai AES + RSA</h1>
+  <p class="muted">Kết hợp mã hóa đối xứng để bảo vệ dữ liệu giao dịch và mã hóa bất đối xứng để bảo vệ khóa AES.</p>
+
+  <section class="grid">
+    <div class="card">
+      <span class="tag">AES-256-GCM</span>
+      <h2>Mã hóa dữ liệu</h2>
+      <p class="muted">AES dùng cùng một khóa để mã hóa và giải mã. GCM còn hỗ trợ kiểm tra tính toàn vẹn và phát hiện dữ liệu bị chỉnh sửa.</p>
+    </div>
+    <div class="card">
+      <span class="tag">RSA-OAEP</span>
+      <h2>Bảo vệ khóa AES</h2>
+      <p class="muted">Khóa công khai RSA được dùng để mã hóa khóa AES. Khóa riêng tương ứng được dùng để giải mã khóa AES.</p>
+    </div>
+  </section>
+
+  <h2 style="margin-top:30px">Luồng xử lý dự kiến</h2>
+  <section class="flow">
+    <div class="step"><div class="number">01</div><strong>Dữ liệu giao dịch</strong><p class="muted">Thông tin người nhận, số tiền và nội dung.</p></div>
+    <div class="step"><div class="number">02</div><strong>AES-GCM</strong><p class="muted">Mã hóa dữ liệu bằng khóa AES.</p></div>
+    <div class="step"><div class="number">03</div><strong>RSA-OAEP</strong><p class="muted">Mã hóa khóa AES bằng khóa công khai RSA.</p></div>
+    <div class="step"><div class="number">04</div><strong>Backend</strong><p class="muted">Xử lý gói dữ liệu và trả kết quả.</p></div>
+  </section>
+
+  <section class="card">
+    <h2>Trạng thái mô-đun</h2>
+    <p class="muted">Trang này mô tả quy trình mã hóa. Chỉ đánh dấu thành công khi backend đã thực hiện mã hóa và trả về kết quả xác thực.</p>
+    <p><strong>Thuật toán dữ liệu:</strong> AES-256-GCM</p>
+    <p><strong>Thuật toán bảo vệ khóa:</strong> RSA-OAEP</p>
+    <p><strong>Trạng thái:</strong> <span style="color:#b7791f">Chờ kết nối backend</span></p>
+    <a href="/transfer" class="btn">Đi đến chuyển tiền</a>
+  </section>
+
+  <div class="notice" style="margin-top:22px">
+    <strong>Lưu ý:</strong> Không đưa khóa riêng RSA, khóa AES hoặc dữ liệu bí mật vào mã HTML hay kho GitHub. Việc tạo khóa và mã hóa thật nên được xử lý trong mô-đun bảo mật của dự án.
+  </div>
+</div>
+</main>
+</div>
+</body>
+</html>
