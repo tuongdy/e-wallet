@@ -24,7 +24,7 @@ function getTimestamp() {
   );
 }
 
-// Tạo mã giao dịch dạng GD + số 
+// Tạo mã giao dịch dạng GD + số
 function generateTransactionId() {
   return "GD" + Date.now();
 }
@@ -112,76 +112,181 @@ async function sendTransfer(payload) {
   return data;
 }
 
-// ===================== XỬ LÝ KHI BẤM NÚT CHUYỂN =====================
-form.addEventListener("submit", async (event) => {
-  event.preventDefault(); // chặn trình duyệt tải lại trang
-  hideAlert();
-  clearErrors();
-  resultBox.classList.add("hidden");
+// ===================== XÁC NHẬN MẬT KHẨU =====================
 
-  // 1. Đọc dữ liệu người dùng nhập
-  const amountRaw = document.getElementById("amount").value.trim();
-  const input = {
-    sender: document.getElementById("sender").value.trim(),
-    receiver: document.getElementById("receiver").value.trim(),
-    amountRaw: amountRaw,
-    amount: Number(amountRaw),
-    currency: document.getElementById("currency").value,
-    content: document.getElementById("content").value.trim(),
-  };
+const passwordModal = document.getElementById("password-modal");
+const passwordInput = document.getElementById("confirm-password");
+const passwordError = document.getElementById("password-error");
+const confirmPasswordBtn = document.getElementById("confirm-password-btn");
+const cancelPasswordBtn = document.getElementById("cancel-password");
 
-  // 2. Kiểm tra hợp lệ
-  const errors = validate(input);
-  if (Object.keys(errors).length > 0) {
-    for (const field in errors) showFieldError(field, errors[field]);
-    showAlert("Vui lòng kiểm tra lại thông tin", "error");
-    return;
-  }
+let pendingPayload = null;
 
-  // 3. Đóng gói đúng cấu trúc JSON thống nhất của nhóm (không đổi tên trường)
-  const payload = {
+// Mở cửa sổ xác nhận mật khẩu
+function openPasswordModal(payload) {
+    pendingPayload = payload;
+
+    passwordInput.value = "";
+    passwordError.textContent = "";
+
+    passwordModal.style.display = "flex";
+    passwordInput.focus();
+}
+
+// Đóng cửa sổ xác nhận
+function closePasswordModal() {
+    passwordModal.style.display = "none";
+    passwordInput.value = "";
+    passwordError.textContent = "";
+    pendingPayload = null;
+}
+
+// ===================== BƯỚC 1: KIỂM TRA THÔNG TIN =====================
+
+form.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    hideAlert();
+    clearErrors();
+    resultBox.classList.add("hidden");
+
+    const amountRaw = document.getElementById("amount").value.trim();
+
+    const input = {
+        sender: document.getElementById("sender").value.trim(),
+        receiver: document.getElementById("receiver").value.trim(),
+        amountRaw: amountRaw,
+        amount: Number(amountRaw),
+        currency: document.getElementById("currency").value,
+        content: document.getElementById("content").value.trim(),
+    };
+
+    const errors = validate(input);
+
+    if (Object.keys(errors).length > 0) {
+        for (const field in errors) {
+            showFieldError(field, errors[field]);
+        }
+
+        showAlert("Vui lòng kiểm tra lại thông tin", "error");
+        return;
+    }
+
+    // Đóng gói dữ liệu giao dịch
+    const payload = {
     transaction_id: generateTransactionId(),
+    idempotency_key: crypto.randomUUID(),
     sender: input.sender,
     receiver: input.receiver,
     amount: input.amount,
     currency: input.currency,
     content: input.content || "Chuyen tien",
-    timestamp: getTimestamp(),
-  };
+    timestamp: getTimestamp()
+};
+    // Hiện cửa sổ nhập lại mật khẩu
+    openPasswordModal(payload);
+});
 
-  // 4. Gửi đến backend
-  submitBtn.disabled = true;
-  submitBtn.textContent = "Đang gửi...";
+// ===================== BƯỚC 2: GỬI GIAO DỊCH =====================
 
-
-  try {
-    const result = await sendTransfer(payload);
-    showAlert(result.message || "Chuyển tiền thành công!", "success");
-
-    // Lưu dữ liệu giao dịch thật từ Backend
-    if (result.success && result.encrypted_transaction) {
-      localStorage.setItem(
-        "latest_transaction",
-        JSON.stringify(result.transaction)
-      );
-
-      localStorage.setItem(
-        "latest_encrypted_package",
-        JSON.stringify(result.encrypted_transaction)
-      );
+async function processTransfer() {
+    if (!pendingPayload) {
+        return;
     }
 
-    resultJson.textContent = JSON.stringify(result, null, 2);
-    resultBox.classList.remove("hidden");
-    form.reset();
-    document.getElementById("sender").value = payload.sender;
+    const password = passwordInput.value;
 
-  } catch (error) {
-    showAlert("Chuyển tiền thất bại: " + error.message, "error");
+    if (!password) {
+        passwordError.textContent = "Vui lòng nhập mật khẩu.";
+        return;
+    }
 
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = "Chuyển tiền";
-  }
+    // Thêm mật khẩu vào request gửi Backend
+    const requestPayload = {
+        ...pendingPayload,
+        password: password
+    };
 
+    confirmPasswordBtn.disabled = true;
+    cancelPasswordBtn.disabled = true;
+    submitBtn.disabled = true;
+
+    confirmPasswordBtn.textContent = "Đang xác thực...";
+
+    try {
+        const result = await sendTransfer(requestPayload);
+
+        if (!result.success || !result.transaction_id) {
+            throw new Error(
+                result.message || "Không thể xử lý giao dịch."
+            );
+        }
+
+        console.log(
+            "PHẢN HỒI BACKEND:",
+            JSON.stringify(result, null, 2)
+        );
+
+        // Lưu thông tin giao dịch
+        localStorage.setItem(
+            "latest_transaction",
+            JSON.stringify(result.transaction)
+        );
+
+        localStorage.setItem(
+            "latest_encrypted_package",
+            JSON.stringify(result.encrypted_transaction)
+        );
+
+        // Xóa mật khẩu khỏi ô nhập
+        passwordInput.value = "";
+
+        closePasswordModal();
+
+        showAlert(
+            result.message || "Giao dịch thành công.",
+            "success"
+        );
+
+        resultJson.textContent = JSON.stringify(result, null, 2);
+        resultBox.classList.remove("hidden");
+
+        // Chuyển sang trang mã hóa AES + RSA
+        window.location.href =
+            "/encryption?transaction_id=" +
+            encodeURIComponent(result.transaction_id);
+
+    } catch (error) {
+        passwordError.textContent = error.message;
+
+    } finally {
+        confirmPasswordBtn.disabled = false;
+        cancelPasswordBtn.disabled = false;
+        submitBtn.disabled = false;
+
+        confirmPasswordBtn.textContent = "Xác nhận";
+        submitBtn.textContent = "Xác nhận chuyển tiền";
+    }
+}
+
+// Nhấn nút xác nhận mật khẩu
+confirmPasswordBtn.addEventListener("click", processTransfer);
+
+// Cho phép nhấn Enter để xác nhận
+passwordInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+        processTransfer();
+    }
+});
+
+// Nhấn hủy
+cancelPasswordBtn.addEventListener("click", () => {
+    closePasswordModal();
+});
+
+// Nhấn ra ngoài cửa sổ để đóng
+passwordModal.addEventListener("click", (event) => {
+    if (event.target === passwordModal) {
+        closePasswordModal();
+    }
 });

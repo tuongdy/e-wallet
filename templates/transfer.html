@@ -3,57 +3,312 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chuyển tiền - E-Wallet</title>
+  <title>Chuyển tiền - TrueWallet</title>
+
   <link rel="stylesheet" href="{{ url_for('static', filename='css/transfer.css') }}">
 </head>
+
 <body>
   <main class="container">
-    <h1>Chuyển tiền</h1>
 
-    <!-- Vùng hiển thị thông báo thành công / lỗi -->
+    <!-- HEADER -->
+    <header class="page-header">
+      <a href="{{ url_for('home') }}" class="back-link">
+        <span aria-hidden="true">←</span>
+        <span>Trang chủ</span>
+      </a>
+
+      <div class="brand">
+        <span class="brand-mark">T</span>
+        <span>TRUEWALLET</span>
+      </div>
+
+      <div class="header-content">
+        <span class="eyebrow">DIGITAL WALLET</span>
+        <h1>Chuyển tiền</h1>
+        <p>Thực hiện giao dịch nhanh chóng và an toàn với công nghệ mã hóa AES + RSA.</p>
+      </div>
+    </header>
+
+    <!-- ALERT -->
     <div id="alert" class="alert hidden" role="alert"></div>
 
-    <form id="transfer-form" novalidate>
-      <div class="form-group">
-        <label for="sender">Người gửi <span class="required">*</span></label>
-        <input type="text" id="sender" name="sender" value="USER_A" placeholder="VD: USER_A">
-        <small class="error" data-error-for="sender"></small>
-      </div>
+    <!-- MAIN CONTENT -->
+    <div class="transfer-layout">
 
-      <div class="form-group">
-        <label for="receiver">Người nhận <span class="required">*</span></label>
-        <input type="text" id="receiver" name="receiver" placeholder="VD: USER_B">
-        <small class="error" data-error-for="receiver"></small>
-      </div>
+      <!-- TRANSFER FORM -->
+      <section class="transfer-card">
 
-      <div class="form-group">
-        <label for="amount">Số tiền <span class="required">*</span></label>
-        <input type="number" id="amount" name="amount" min="1" step="1" placeholder="VD: 100000">
-        <small class="error" data-error-for="amount"></small>
-      </div>
+        <div class="card-heading">
+          <div>
+            <span class="section-label">NEW TRANSACTION</span>
+            <h2>Thông tin chuyển tiền</h2>
+            <p>Vui lòng nhập đầy đủ thông tin giao dịch.</p>
+          </div>
 
-      <div class="form-group">
-        <label for="currency">Loại tiền</label>
-        <select id="currency" name="currency">
-          <option value="VND" selected>VND</option>
-        </select>
-      </div>
+          <div class="heading-icon" aria-hidden="true">↗</div>
+        </div>
 
-      <div class="form-group">
-        <label for="content">Nội dung chuyển khoản</label>
-        <input type="text" id="content" name="content" maxlength="200" placeholder="VD: Chuyen tien">
-        <small class="error" data-error-for="content"></small>
-      </div>
+        <form id="transfer-form" novalidate>
 
-      <button type="submit" id="submit-btn">Chuyển tiền</button>
-    </form>
+          <!-- SENDER -->
+          <div class="form-section">
+            <label for="sender">
+              Người gửi <span class="required">*</span>
+            </label>
 
-    <!-- Hiển thị JSON vừa gửi để demo/trình bày -->
+            <div class="input-wrapper readonly-wrapper">
+              <span class="input-icon" aria-hidden="true">👤</span>
+              <input
+                type="text"
+                id="sender"
+                name="sender"
+                value="{{ username }}"
+                readonly
+              >
+              <span class="field-status">Tài khoản của bạn</span>
+            </div>
+
+            <small class="error" data-error-for="sender"></small>
+          </div>
+
+          <!-- RECEIVER -->
+          <div class="form-section">
+            <label for="receiver">
+              Người nhận <span class="required">*</span>
+            </label>
+
+            <div class="input-wrapper">
+              <span class="input-icon" aria-hidden="true">👥</span>
+              <input
+                type="text"
+                id="receiver"
+                name="receiver"
+                placeholder="Nhập tên tài khoản người nhận"
+                autocomplete="off"
+              >
+            </div>
+
+            <small class="error" data-error-for="receiver"></small>
+          </div>
+
+          <!-- AMOUNT -->
+          <div class="amount-section">
+            <label for="amount">Số tiền chuyển</label>
+
+            <div class="amount-input">
+              <input
+                type="number"
+                id="amount"
+                name="amount"
+                min="1"
+                step="1"
+                placeholder="0"
+              >
+
+              <span class="currency-unit">VND</span>
+            </div>
+
+            <div class="amount-divider"></div>
+
+            <div class="amount-footer">
+              <span>Loại tiền</span>
+
+              <select id="currency" name="currency">
+                <option value="VND" selected>Việt Nam Đồng (VND)</option>
+              </select>
+            </div>
+
+            <small class="error" data-error-for="amount"></small>
+          </div>
+
+          <!-- CONTENT -->
+          <div class="form-section">
+            <label for="content">Nội dung chuyển khoản</label>
+
+            <div class="input-wrapper">
+              <span class="input-icon" aria-hidden="true">✎</span>
+              <input
+                type="text"
+                id="content"
+                name="content"
+                maxlength="200"
+                placeholder="Ví dụ: Chuyển tiền ăn trưa"
+              >
+            </div>
+
+            <small class="error" data-error-for="content"></small>
+          </div>
+
+          <!-- SECURITY NOTE -->
+          <div class="security-note">
+            <div class="security-icon" aria-hidden="true">🔐</div>
+
+            <div class="security-content">
+              <strong>Bảo mật giao dịch</strong>
+              <p>
+                Dữ liệu giao dịch được mã hóa bằng AES-GCM.
+                Khóa phiên AES được bảo vệ bằng RSA-OAEP.
+              </p>
+            </div>
+
+            <span class="security-check" aria-label="Bảo mật được tích hợp">✓</span>
+          </div>
+
+          <!-- SUBMIT -->
+          <button type="submit" id="submit-btn" class="primary-button">
+            <span>Xác nhận chuyển tiền</span>
+            <span aria-hidden="true">→</span>
+          </button>
+
+          <p class="form-footnote">
+            Vui lòng kiểm tra thông tin trước khi xác nhận giao dịch.
+          </p>
+
+        </form>
+      </section>
+
+      <!-- RIGHT INFORMATION PANEL -->
+      <aside class="side-panel">
+
+        <section class="side-card security-card">
+          <div class="side-card-heading">
+            <div class="side-icon">♧</div>
+            <span class="status-indicator">SECURE SYSTEM</span>
+          </div>
+
+          <h2>Giao dịch được bảo vệ</h2>
+
+          <p>
+            TrueWallet sử dụng mô hình mã hóa lai để bảo vệ dữ liệu
+            giao dịch trong quá trình xử lý.
+          </p>
+
+          <div class="security-method">
+            <div class="method-icon">A</div>
+            <div>
+              <strong>AES-256-GCM</strong>
+              <span>Mã hóa dữ liệu giao dịch</span>
+            </div>
+          </div>
+
+          <div class="method-divider"></div>
+
+          <div class="security-method">
+            <div class="method-icon rsa-icon">R</div>
+            <div>
+              <strong>RSA-OAEP</strong>
+              <span>Bảo vệ khóa phiên AES</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="side-card process-card">
+          <span class="section-label">TRANSACTION PROCESS</span>
+          <h3>Quy trình xử lý</h3>
+
+          <div class="process-list">
+            <div class="process-item">
+              <span class="process-number">01</span>
+              <div>
+                <strong>Tiếp nhận thông tin</strong>
+                <p>Hệ thống nhận dữ liệu giao dịch.</p>
+              </div>
+            </div>
+
+            <div class="process-item">
+              <span class="process-number">02</span>
+              <div>
+                <strong>Mã hóa dữ liệu</strong>
+                <p>AES-GCM bảo vệ nội dung giao dịch.</p>
+              </div>
+            </div>
+
+            <div class="process-item">
+              <span class="process-number">03</span>
+              <div>
+                <strong>Bảo vệ khóa phiên</strong>
+                <p>RSA-OAEP mã hóa khóa AES.</p>
+              </div>
+            </div>
+
+            <div class="process-item">
+              <span class="process-number">04</span>
+              <div>
+                <strong>Xác thực dữ liệu</strong>
+                <p>Kiểm tra tính toàn vẹn sau giải mã.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="side-note">
+          <span aria-hidden="true">ⓘ</span>
+          <p>
+            Đây là hệ thống ví điện tử mô phỏng phục vụ mục đích học tập.
+            Giao dịch không sử dụng tiền thật.
+          </p>
+        </div>
+
+      </aside>
+    </div>
+
+    <!-- RESULT -->
     <section id="result" class="result hidden">
-      <h2>Dữ liệu giao dịch đã gửi</h2>
+      <h2>Kết quả giao dịch</h2>
       <pre id="result-json"></pre>
     </section>
+
   </main>
+
+  <!-- PASSWORD CONFIRMATION MODAL -->
+  <div
+    id="password-modal"
+    class="password-modal hidden"
+    style="display: none;"
+  >
+    <div class="password-dialog">
+
+      <div class="modal-icon">🔐</div>
+
+      <span class="section-label">SECURITY VERIFICATION</span>
+      <h2>Xác thực giao dịch</h2>
+
+      <p class="modal-description">
+        Vui lòng nhập lại mật khẩu đăng nhập để xác nhận giao dịch.
+      </p>
+
+      <label for="confirm-password">Mật khẩu đăng nhập</label>
+
+      <input
+        type="password"
+        id="confirm-password"
+        placeholder="Nhập mật khẩu của bạn"
+        autocomplete="current-password"
+      >
+
+      <p id="password-error" class="password-error"></p>
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          id="cancel-password"
+          class="secondary-button"
+        >
+          Hủy
+        </button>
+
+        <button
+          type="button"
+          id="confirm-password-btn"
+          class="primary-button modal-confirm-button"
+        >
+          Xác nhận
+        </button>
+      </div>
+
+    </div>
+  </div>
 
   <script src="{{ url_for('static', filename='js/transfer.js') }}"></script>
 </body>

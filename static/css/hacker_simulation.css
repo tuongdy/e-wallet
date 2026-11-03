@@ -1,0 +1,270 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #080d18;
+    color: #e5eaf3;
+    font-family: Arial, sans-serif;
+}
+
+.lab-container {
+    max-width: 1250px;
+    margin: auto;
+    padding: 35px 25px;
+}
+
+.lab-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.brand, .section-label {
+    color: #36d6b0;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.lab-header h1 {
+    font-size: 34px;
+    margin: 12px 0;
+}
+
+.lab-header p {
+    color: #9ba8bd;
+    line-height: 1.6;
+}
+
+.back-button, button {
+    border: 1px solid #285b68;
+    background: #102b38;
+    color: #5de3c2;
+    padding: 11px 17px;
+    border-radius: 7px;
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover, .back-button:hover {
+    background: #174454;
+}
+
+.safety-notice {
+    padding: 18px;
+    border: 1px solid #715c29;
+    background: #241f12;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+.safety-notice strong {
+    color: #f2c66d;
+    font-size: 13px;
+}
+
+.safety-notice p {
+    color: #c9b98f;
+    margin-top: 8px;
+    line-height: 1.6;
+}
+
+.machine-grid {
+    display: grid;
+    grid-template-columns: 1fr 180px 1fr;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.machine-card, .panel {
+    background: #111a2a;
+    border: 1px solid #25364d;
+    border-radius: 12px;
+    padding: 25px;
+}
+
+.machine-card {
+    min-height: 270px;
+}
+
+.machine-icon {
+    font-size: 35px;
+    margin-bottom: 15px;
+}
+
+.machine-label {
+    color: #36d6b0;
+    font-size: 11px;
+    letter-spacing: 2px;
+}
+
+.machine-card h2 {
+    margin: 10px 0;
+    font-size: 21px;
+}
+
+.machine-card > p {
+    color: #9ba8bd;
+    margin-bottom: 20px;
+}
+
+.machine-status {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 18px;
+    font-size: 13px;
+}
+
+.status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #8993a4;
+}
+
+.status-dot.online {
+    background: #36d6b0;
+    box-shadow: 0 0 10px #36d6b0;
+}
+
+.machine-info {
+    border-top: 1px solid #29364a;
+    padding-top: 15px;
+    color: #9ba8bd;
+    font-size: 13px;
+    line-height: 2;
+}
+
+.connection-indicator {
+    text-align: center;
+    color: #36d6b0;
+}
+
+.connection-indicator span {
+    font-size: 45px;
+}
+
+.connection-indicator p {
+    font-size: 11px;
+    font-weight: bold;
+    margin: 8px 0;
+}
+
+.connection-indicator small {
+    color: #9ba8bd;
+}
+
+.panel {
+    margin-bottom: 25px;
+}
+
+.panel-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.panel h2 {
+    margin-top: 10px;
+    font-size: 21px;
+}
+
+.panel > p {
+    color: #9ba8bd;
+    line-height: 1.7;
+}
+
+.scenario-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 22px;
+}
+
+.scenario-item {
+    background: #0b1423;
+    border: 1px solid #263950;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.scenario-item > span {
+    color: #36d6b0;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.scenario-item h3 {
+    margin: 12px 0;
+    font-size: 17px;
+}
+
+.scenario-item p {
+    color: #9ba8bd;
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 42px;
+    margin-bottom: 17px;
+}
+
+.lab-log {
+    background: #080e19;
+    border: 1px solid #26364b;
+    border-radius: 8px;
+    padding: 17px;
+    min-height: 120px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.lab-log p {
+    color: #a9b8ca;
+    font-size: 13px;
+    line-height: 1.8;
+    border-bottom: 1px solid #202d40;
+    padding: 7px 0;
+}
+
+.lab-log .empty-log {
+    color: #77869a;
+    border: none;
+}
+
+footer {
+    text-align: center;
+    color: #65758c;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    padding: 20px 0;
+}
+
+@media (max-width: 800px) {
+    .machine-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .connection-indicator span {
+        display: inline-block;
+        transform: rotate(90deg);
+    }
+
+    .scenario-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lab-header, .panel-heading {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

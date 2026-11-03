@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRUEWALLET | Hacker Simulation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hacker_simulation.css') }}">
+</head>
+<body>
+
+<div class="lab-container">
+
+    <header class="lab-header">
+        <div>
+            <p class="brand">TRUEWALLET / CYBER DEFENSE LAB</p>
+            <h1>Hacker Simulation</h1>
+            <p>Môi trường mô phỏng kiểm thử bảo mật giữa máy Hacker và máy chủ TRUEWALLET.</p>
+        </div>
+        <a href="{{ url_for('security') }}" class="back-button">← Security Center</a>
+    </header>
+
+    <div class="safety-notice">
+        <strong>ISOLATED LAB ENVIRONMENT</strong>
+        <p>
+            Chỉ sử dụng dữ liệu giả lập và mạng Host-only.
+            Không kết nối hệ thống thanh toán thật hoặc mạng bên ngoài.
+        </p>
+    </div>
+
+    <section class="machine-grid">
+
+        <div class="machine-card hacker">
+            <div class="machine-icon">💻</div>
+            <span class="machine-label">VM 01</span>
+            <h2>Hacker Machine</h2>
+            <p>Ubuntu Desktop</p>
+            <div class="machine-status">
+                <span class="status-dot"></span>
+                <span id="hacker-status">Chưa kết nối</span>
+            </div>
+            <div class="machine-info">
+                <p>Vai trò: Máy kiểm thử</p>
+                <p>Mạng: Host-only</p>
+                <p>Địa chỉ IP: <span id="hacker-ip">Chưa cấu hình</span></p>
+            </div>
+        </div>
+
+        <div class="connection-indicator">
+            <span>↔</span>
+            <p>HOST-ONLY NETWORK</p>
+            <small id="network-status">Đang chờ kết nối</small>
+        </div>
+
+        <div class="machine-card server">
+            <div class="machine-icon">🖥️</div>
+            <span class="machine-label">VM 02</span>
+            <h2>TRUEWALLET Server</h2>
+            <p>Ubuntu Server</p>
+            <div class="machine-status">
+                <span class="status-dot" id="server-dot"></span>
+                <span id="server-status">Chưa kết nối</span>
+            </div>
+            <div class="machine-info">
+                <p>Vai trò: Máy chủ bảo vệ</p>
+                <p>Mã hóa: AES-256-GCM</p>
+                <p>Bảo vệ khóa: RSA-OAEP</p>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="panel">
+        <div class="panel-heading">
+            <div>
+                <span class="section-label">LAB CONTROL</span>
+                <h2>Kiểm tra kết nối</h2>
+            </div>
+            <button id="check-connection">Kiểm tra kết nối</button>
+        </div>
+        <p id="connection-message">
+            Chưa thực hiện kiểm tra. Hãy kiểm tra máy chủ trước khi chạy mô phỏng.
+        </p>
+    </section>
+
+    <section class="panel">
+        <span class="section-label">SIMULATION WORKSPACE</span>
+        <h2>Khu vực kiểm thử bảo mật</h2>
+        <p>
+            Các thao tác bên dưới chỉ kiểm tra phản ứng phòng vệ
+            bằng dữ liệu giao dịch giả lập.
+        </p>
+
+        <div class="scenario-grid">
+            <div class="scenario-item">
+                <span>01</span>
+                <h3>Encrypted Data Inspection</h3>
+                <p>Quan sát gói dữ liệu mã hóa do hệ thống cung cấp.</p>
+                <button class="lab-action" data-scenario="inspection">
+                    Kiểm tra dữ liệu
+                </button>
+            </div>
+
+            <div class="scenario-item">
+                <span>02</span>
+                <h3>Data Integrity Check</h3>
+                <p>Kiểm tra khả năng phát hiện dữ liệu thử nghiệm bị thay đổi.</p>
+                <button class="lab-action" data-scenario="integrity">
+                    Kiểm tra toàn vẹn
+                </button>
+            </div>
+
+            <div class="scenario-item">
+                <span>03</span>
+                <h3>Replay Protection</h3>
+                <p>Kiểm tra cơ chế phát hiện mã giao dịch giả lập trùng lặp.</p>
+                <button class="lab-action" data-scenario="replay">
+                    Kiểm tra chống gửi lại
+                </button>
+            </div>
+
+            <div class="scenario-item">
+                <span>04</span>
+                <h3>Hybrid Encryption</h3>
+                <p>Quan sát quy trình AES mã hóa dữ liệu và RSA bảo vệ khóa phiên.</p>
+                <button class="lab-action" data-scenario="hybrid">
+                    Kiểm tra AES + RSA
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-heading">
+            <div>
+                <span class="section-label">LIVE SECURITY MONITORING</span>
+                <h2>Nhật ký kiểm thử</h2>
+            </div>
+            <button id="clear-lab-log">Xóa nhật ký hiển thị</button>
+        </div>
+
+        <div id="lab-log" class="lab-log">
+            <p class="empty-log">Chưa có sự kiện kiểm thử.</p>
+        </div>
+    </section>
+
+    <footer>
+        TRUEWALLET CYBER DEFENSE LAB · EDUCATIONAL SIMULATION
+    </footer>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/hacker_simulation.js') }}"></script>
+</body>
+</html>

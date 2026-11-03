@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quy trình mã hóa AES + RSA</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="encryption-page">
+
+<main class="container encryption-container">
+
+    <!-- TIÊU ĐỀ -->
+    <header class="encryption-header">
+        <div class="encryption-label">BẢO MẬT GIAO DỊCH</div>
+        <h1>Quy trình mã hóa AES + RSA</h1>
+        <p>
+            Theo dõi quá trình mã hóa lai và xác thực dữ liệu
+            trong giao dịch ví điện tử.
+        </p>
+    </header>
+
+    <!-- THÔNG TIN GIAO DỊCH -->
+    <section class="encryption-card">
+        <div class="section-heading">
+            <div>
+                <span class="section-number">01</span>
+                <h2>Thông tin giao dịch</h2>
+            </div>
+        </div>
+
+        <div id="transaction-info" class="transaction-info">
+            Đang tải thông tin giao dịch...
+        </div>
+    </section>
+
+    <!-- QUY TRÌNH MÃ HÓA -->
+    <section class="encryption-card">
+        <div class="section-heading">
+            <div>
+                <span class="section-number">02</span>
+                <h2>Quy trình mã hóa và giải mã</h2>
+            </div>
+        </div>
+
+        <p class="section-description">
+            Hệ thống sử dụng AES-GCM để mã hóa dữ liệu giao dịch
+            và RSA-OAEP để bảo vệ khóa phiên AES.
+        </p>
+
+        <div id="encryption-steps" class="encryption-steps">
+            Đang tải quá trình xử lý...
+        </div>
+
+        <!-- DỮ LIỆU KỸ THUẬT -->
+        <details class="technical-details">
+            <summary>Xem dữ liệu mã hóa chi tiết</summary>
+            <pre id="result">Đang xử lý...</pre>
+        </details>
+    </section>
+
+    <!-- THÔNG TIN KHÓA PHIÊN -->
+    <section class="encryption-card">
+        <div class="section-heading">
+            <div>
+                <span class="section-number">03</span>
+                <h2>Thông tin khóa phiên AES</h2>
+            </div>
+        </div>
+
+        <p class="section-description">
+            Mỗi giao dịch sử dụng một khóa phiên AES-256 riêng biệt.
+            Khóa thật không được hiển thị trên giao diện.
+        </p>
+
+        <div id="session-key-info" class="session-key-info">
+            Chưa có thông tin khóa phiên.
+        </div>
+    </section>
+
+    <!-- LỊCH SỬ KHÓA -->
+    <section class="encryption-card">
+        <div class="section-heading">
+            <div>
+                <span class="section-number">04</span>
+                <h2>Lịch sử khóa phiên</h2>
+            </div>
+        </div>
+
+        <p class="section-description">
+            Danh sách các khóa phiên được sử dụng trong những giao dịch gần đây.
+        </p>
+
+        <div id="session-key-history" class="session-key-history">
+            Chưa có dữ liệu lịch sử.
+        </div>
+    </section>
+
+    <!-- KẾT QUẢ XÁC THỰC -->
+    <section class="encryption-card verification-card">
+        <div class="section-heading">
+            <div>
+                <span class="section-number">05</span>
+                <h2>Kết quả xác thực</h2>
+            </div>
+        </div>
+
+        <div id="verification-result">
+            Đang chờ kết quả xác thực...
+        </div>
+    </section>
+
+    <!-- ĐIỀU HƯỚNG -->
+    <footer class="encryption-footer">
+        <a href="/transfer" class="encryption-button secondary-button">
+            ← Quay lại chuyển tiền
+        </a>
+
+        <a href="/" class="encryption-button primary-button">
+            Trang chủ
+        </a>
+    </footer>
+
+</main>
+
+<script src="{{ url_for('static', filename='js/encryption.js') }}"></script>
+
+</body>
+</html>
