@@ -5,6 +5,9 @@ import sqlite3
 import base64
 import hashlib
 import re
+import copy
+import crypto as crypto_module
+
 from functools import wraps
 from datetime import datetime, timezone
 from uuid import uuid4
@@ -31,8 +34,52 @@ app.config["SECRET_KEY"] = SECRET_KEY
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+# Chỉ bật Secure Cookie khi triển khai qua HTTPS
+app.config["SESSION_COOKIE_SECURE"] = (
+    os.environ.get("COOKIE_SECURE", "0") == "1"
+)
+
 DB_NAME = "truewallet.db"
 
+@app.after_request
+def add_security_headers(response):
+    """Bổ sung HTTP Security Headers cho các phản hồi Flask."""
+
+    # Ngăn trình duyệt tự suy đoán kiểu nội dung
+    response.headers.setdefault(
+        "X-Content-Type-Options",
+        "nosniff"
+    )
+
+    # Ngăn trang web bị nhúng vào iframe từ website khác
+    response.headers.setdefault(
+        "X-Frame-Options",
+        "DENY"
+    )
+
+    # Giới hạn thông tin Referer được gửi đi
+    response.headers.setdefault(
+        "Referrer-Policy",
+        "strict-origin-when-cross-origin"
+    )
+
+    # Chính sách bảo mật nội dung
+    response.headers.setdefault(
+        "Content-Security-Policy",
+        "default-src 'self'; "
+        "img-src 'self' data: https:; "
+        "style-src 'self' 'unsafe-inline' https:; "
+        "script-src 'self' 'unsafe-inline' https:; "
+        "connect-src 'self' https:; "
+        "font-src 'self' data: https:; "
+        "object-src 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'; "
+        "frame-ancestors 'none'"
+    )
+
+    return response
 
 def get_db():
     conn = sqlite3.connect(DB_NAME)
@@ -1489,6 +1536,1034 @@ def security_status_api():
         "security_logging": "enabled",
         "encryption": "AES-GCM + RSA-OAEP",
         "timestamp": datetime.now(timezone.utc).isoformat()
+    }), 200
+# ==========================================
+# FULL SECURITY ASSESSMENT - SECTION 07
+# ==========================================
+
+def assessment_check(status, detail):
+    return {
+        "status": status,
+        "detail": detail
+    }
+
+
+def assessment_response(stage, checks, evidence=None):
+    """Tổng hợp trạng thái kiểm thử của một giai đoạn."""
+
+    statuses = [
+        item["status"]
+        for item in checks.values()
+    ]
+
+    if "FAILED" in statuses:
+        overall_status = "FAILED"
+    elif "WARNING" in statuses:
+        overall_status = "WARNING"
+    else:
+        overall_status = "PASSED"
+
+    findings = []
+
+    for name, item in checks.items():
+        if item["status"] in ("WARNING", "FAILED"):
+            findings.append({
+                "name": name,
+                "status": item["status"],
+                "detail": item["detail"]
+            })
+
+    return jsonify({
+        "success": True,
+        "stage": stage,
+        "status": overall_status,
+        "checks": checks,
+        "findings": findings,
+        "evidence": evidence or {},
+        "message": (
+            "Giai đoạn kiểm thử hoàn tất."
+            if overall_status == "PASSED"
+            else "Giai đoạn kiểm thử hoàn tất, cần xem lại các kết quả cảnh báo hoặc lỗi."
+        )
+    }), 200
+
+
+def get_assessment_data():
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return None
+
+    return data
+
+
+# ------------------------------------------
+# 01. INITIALIZE SCANNER
+# ------------------------------------------
+
+@app.route(
+    "/api/security/assessment/initialize",
+    methods=["POST"]
+)
+@login_required
+def assessment_initialize_api():
+
+    checks = {}
+    evidence = {}
+
+    # Kiểm tra Flask
+    checks["flask"] = assessment_check(
+        "PASSED",
+        "Flask application đang hoạt động và tiếp nhận yêu cầu."
+    )
+
+    # Kiểm tra SQLite
+    conn = None
+
+    try:
+        conn = get_db()
+        conn.execute("SELECT 1").fetchone()
+
+        checks["database"] = assessment_check(
+            "PASSED",
+            "SQLite database kết nối thành công."
+        )
+
+        evidence["database"] = "connected"
+
+    except sqlite3.Error:
+        checks["database"] = assessment_check(
+            "FAILED",
+            "Không thể kết nối SQLite database."
+        )
+
+    finally:
+        if conn:
+            conn.close()
+
+    # Kiểm tra RSA key đã được nạp
+    try:
+        private_key = crypto_module._PRIVATE_KEY
+
+        valid_key = (
+            private_key.has_private()
+            and private_key.size_in_bits() == 2048
+        )
+
+        checks["rsa_key_loaded"] = assessment_check(
+            "PASSED" if valid_key else "FAILED",
+            (
+                "RSA Private Key hợp lệ và đã được nạp."
+                if valid_key else
+                "RSA Private Key không hợp lệ."
+            )
+        )
+
+        evidence["rsa_key_bits"] = private_key.size_in_bits()
+
+    except Exception:
+        checks["rsa_key_loaded"] = assessment_check(
+            "FAILED",
+            "Không thể kiểm tra RSA Private Key."
+        )
+
+    # Kiểm tra bảng nhật ký bảo mật
+    try:
+        conn = get_db()
+
+        conn.execute(
+            "SELECT COUNT(*) FROM security_events"
+        ).fetchone()
+
+        checks["security_logging"] = assessment_check(
+            "PASSED",
+            "Bảng security_events sẵn sàng ghi nhận sự kiện."
+        )
+
+    except sqlite3.Error:
+        checks["security_logging"] = assessment_check(
+            "FAILED",
+            "Không thể truy cập bảng security_events."
+        )
+
+    finally:
+        if conn:
+            conn.close()
+
+    return assessment_response(
+        "initialize",
+        checks,
+        evidence
+    )
+
+
+# ------------------------------------------
+# 02. WEB RECONNAISSANCE
+# ------------------------------------------
+
+@app.route(
+    "/api/security/assessment/recon",
+    methods=["POST"]
+)
+@login_required
+def assessment_recon_api():
+
+    checks = {}
+    evidence = {}
+
+    routes = list(app.url_map.iter_rules())
+
+    route_names = {
+        rule.rule: rule.endpoint
+        for rule in routes
+    }
+
+    required_routes = [
+        "/",
+        "/login",
+        "/transfer",
+        "/encryption",
+        "/security",
+        "/hacker-simulation",
+        "/api/health",
+        "/api/transfer",
+        "/api/decrypt"
+    ]
+
+    missing_routes = [
+        path for path in required_routes
+        if path not in route_names
+    ]
+
+    checks["application_routes"] = assessment_check(
+        "PASSED" if not missing_routes else "WARNING",
+        (
+            "Các route chính của TRUEWALLET đã được đăng ký."
+            if not missing_routes else
+            "Một số route chính chưa được tìm thấy."
+        )
+    )
+
+    evidence["total_routes"] = len(routes)
+    evidence["missing_routes"] = missing_routes
+
+    # Kiểm tra API health
+    try:
+        with app.test_client() as client:
+            response = client.get("/api/health")
+
+        health_ok = (
+            response.status_code == 200
+            and response.is_json
+            and response.get_json().get("success") is True
+        )
+
+        checks["health_endpoint"] = assessment_check(
+            "PASSED" if health_ok else "FAILED",
+            (
+                "Health API phản hồi bình thường."
+                if health_ok else
+                "Health API không trả về kết quả hợp lệ."
+            )
+        )
+
+        evidence["health_http_status"] = response.status_code
+
+    except Exception:
+        checks["health_endpoint"] = assessment_check(
+            "FAILED",
+            "Không thể kiểm tra Health API."
+        )
+
+    # Kiểm tra route cần đăng nhập
+    try:
+        with app.test_client() as client:
+            response = client.get(
+                "/hacker-simulation",
+                follow_redirects=False
+            )
+
+        protected = response.status_code in (301, 302, 303)
+
+        checks["protected_page"] = assessment_check(
+            "PASSED" if protected else "WARNING",
+            (
+                "Trang Hacker Simulation yêu cầu đăng nhập."
+                if protected else
+                "Chưa xác nhận được cơ chế bảo vệ trang."
+            )
+        )
+
+        evidence["protected_page_http_status"] = response.status_code
+
+    except Exception:
+        checks["protected_page"] = assessment_check(
+            "WARNING",
+            "Không thể xác minh cơ chế bảo vệ trang."
+        )
+
+    return assessment_response(
+        "recon",
+        checks,
+        evidence
+    )
+
+
+# ------------------------------------------
+# 03. WEB SECURITY SCANNING
+# ------------------------------------------
+
+@app.route(
+    "/api/security/assessment/web",
+    methods=["POST"]
+)
+@login_required
+def assessment_web_api():
+
+    checks = {}
+    evidence = {}
+
+    # Kiểm tra SECRET_KEY
+    secret_key = app.config.get("SECRET_KEY")
+
+    secret_valid = (
+        isinstance(secret_key, str)
+        and len(secret_key) >= 32
+    )
+
+    checks["secret_key"] = assessment_check(
+        "PASSED" if secret_valid else "FAILED",
+        (
+            "SECRET_KEY đã được cấu hình với độ dài phù hợp."
+            if secret_valid else
+            "SECRET_KEY chưa đáp ứng yêu cầu cấu hình."
+        )
+    )
+
+    # Kiểm tra cấu hình Cookie
+    cookie_http_only = app.config.get(
+        "SESSION_COOKIE_HTTPONLY"
+    ) is True
+
+    cookie_same_site = app.config.get(
+        "SESSION_COOKIE_SAMESITE"
+    ) in ("Lax", "Strict")
+
+    cookie_secure = app.config.get(
+        "SESSION_COOKIE_SECURE"
+    ) is True
+
+    checks["session_cookie"] = assessment_check(
+        "PASSED" if cookie_http_only and cookie_same_site else "WARNING",
+        (
+            "Session Cookie có HttpOnly và SameSite phù hợp."
+            if cookie_http_only and cookie_same_site else
+            "Session Cookie cần xem lại cấu hình bảo vệ."
+        )
+    )
+
+    evidence["httponly"] = cookie_http_only
+    evidence["samesite"] = app.config.get(
+        "SESSION_COOKIE_SAMESITE"
+    )
+    evidence["secure_cookie"] = cookie_secure
+
+    if not cookie_secure:
+        evidence["cookie_note"] = (
+            "SESSION_COOKIE_SECURE chưa bật. "
+            "Cần bật khi triển khai trên HTTPS."
+        )
+
+    # Kiểm tra xác thực API
+    try:
+        with app.test_client() as client:
+            response = client.get(
+                "/api/security/events"
+            )
+
+        authentication_ok = response.status_code in (301, 302, 303, 401)
+
+        checks["api_authentication"] = assessment_check(
+            "PASSED" if authentication_ok else "WARNING",
+            (
+                "Security Events API từ chối truy cập khi chưa đăng nhập."
+                if authentication_ok else
+                "Chưa xác minh được yêu cầu đăng nhập của API."
+            )
+        )
+
+        evidence["anonymous_api_status"] = response.status_code
+
+    except Exception:
+        checks["api_authentication"] = assessment_check(
+            "WARNING",
+            "Không thể kiểm tra cơ chế xác thực API."
+        )
+
+    # Kiểm tra một số HTTP Security Headers
+    try:
+        with app.test_client() as client:
+            response = client.get("/api/health")
+
+        headers_to_check = {
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": None,
+            "Content-Security-Policy": None,
+            "Referrer-Policy": None
+        }
+
+        missing_headers = []
+
+        for header, expected in headers_to_check.items():
+            value = response.headers.get(header)
+
+            if not value:
+                missing_headers.append(header)
+
+            elif expected and value.lower() != expected.lower():
+                missing_headers.append(header)
+
+        checks["security_headers"] = assessment_check(
+            "PASSED" if not missing_headers else "WARNING",
+            (
+                "Các HTTP Security Headers được kiểm tra đã có mặt."
+                if not missing_headers else
+                "Một số HTTP Security Headers chưa được cấu hình."
+            )
+        )
+
+        evidence["missing_security_headers"] = missing_headers
+
+    except Exception:
+        checks["security_headers"] = assessment_check(
+            "WARNING",
+            "Không thể kiểm tra HTTP Security Headers."
+        )
+
+    return assessment_response(
+        "web",
+        checks,
+        evidence
+    )
+
+
+# ------------------------------------------
+# 04. AES-256-GCM VERIFICATION
+# ------------------------------------------
+
+@app.route(
+    "/api/security/assessment/aes",
+    methods=["POST"]
+)
+@login_required
+def assessment_aes_api():
+
+    checks = {}
+    evidence = {}
+
+    transaction = {
+        "transaction_id": "ASSESS-AES-" + uuid4().hex[:12],
+        "sender": "assessment_sender",
+        "receiver": "assessment_receiver",
+        "amount": 1000,
+        "currency": "VND",
+        "content": "AES-256-GCM security assessment",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+    try:
+        package = encrypt_transaction(transaction)
+
+        nonce = base64.b64decode(
+            package["nonce"],
+            validate=True
+        )
+
+        tag = base64.b64decode(
+            package["tag"],
+            validate=True
+        )
+
+        checks["nonce_length"] = assessment_check(
+            "PASSED" if len(nonce) == 12 else "FAILED",
+            f"Nonce có kích thước {len(nonce)} byte; yêu cầu 12 byte."
+        )
+
+        checks["tag_length"] = assessment_check(
+            "PASSED" if len(tag) == 16 else "FAILED",
+            f"Authentication Tag có kích thước {len(tag)} byte; yêu cầu 16 byte."
+        )
+
+        checks["algorithm"] = assessment_check(
+            "PASSED" if package.get("algorithm") == crypto_module.ALGORITHM else "FAILED",
+            "Kiểm tra thuật toán AES-256-GCM kết hợp RSA-OAEP."
+        )
+
+        decrypted = decrypt_transaction(package)
+
+        checks["aes_round_trip"] = assessment_check(
+            "PASSED" if decrypted == transaction else "FAILED",
+            (
+                "Dữ liệu sau giải mã trùng khớp dữ liệu ban đầu."
+                if decrypted == transaction else
+                "Dữ liệu sau giải mã không trùng khớp."
+            )
+        )
+
+        # Kiểm tra hai lần mã hóa tạo khóa phiên và nonce khác nhau
+        second_package = encrypt_transaction(transaction)
+
+        fresh_key = (
+            package.get("key_fingerprint")
+            != second_package.get("key_fingerprint")
+        )
+
+        fresh_nonce = (
+            package.get("nonce")
+            != second_package.get("nonce")
+        )
+
+        checks["fresh_session_key"] = assessment_check(
+            "PASSED" if fresh_key else "FAILED",
+            (
+                "Hai lần mã hóa tạo fingerprint khóa phiên khác nhau."
+                if fresh_key else
+                "Không xác nhận được khóa phiên mới."
+            )
+        )
+
+        checks["fresh_nonce"] = assessment_check(
+            "PASSED" if fresh_nonce else "FAILED",
+            (
+                "Hai lần mã hóa tạo nonce khác nhau."
+                if fresh_nonce else
+                "Nonce bị trùng trong hai lần kiểm thử."
+            )
+        )
+
+        evidence["algorithm"] = package.get("algorithm")
+        evidence["nonce_bytes"] = len(nonce)
+        evidence["tag_bytes"] = len(tag)
+        evidence["session_key_id"] = package.get("key_id")
+        evidence["session_key_fingerprint"] = package.get(
+            "key_fingerprint"
+        )
+
+    except Exception as e:
+        checks["aes_process"] = assessment_check(
+            "FAILED",
+            "Không thể hoàn thành kiểm thử AES-GCM."
+        )
+
+        evidence["error_type"] = type(e).__name__
+
+    return assessment_response(
+        "aes",
+        checks,
+        evidence
+    )
+
+
+# ------------------------------------------
+# 05. RSA-OAEP KEY PROTECTION
+# ------------------------------------------
+
+@app.route(
+    "/api/security/assessment/rsa",
+    methods=["POST"]
+)
+@login_required
+def assessment_rsa_api():
+
+    checks = {}
+    evidence = {}
+
+    transaction = {
+        "transaction_id": "ASSESS-RSA-" + uuid4().hex[:12],
+        "sender": "assessment_sender",
+        "receiver": "assessment_receiver",
+        "amount": 2000,
+        "currency": "VND",
+        "content": "RSA-OAEP key protection assessment",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+    try:
+        package = encrypt_transaction(transaction)
+
+        encrypted_key = base64.b64decode(
+            package["encrypted_key"],
+            validate=True
+        )
+
+        private_key = crypto_module._PRIVATE_KEY
+
+        checks["rsa_key_size"] = assessment_check(
+            "PASSED" if private_key.size_in_bits() == 2048 else "FAILED",
+            f"RSA key có kích thước {private_key.size_in_bits()} bit."
+        )
+
+        checks["rsa_oaep"] = assessment_check(
+            "PASSED" if len(encrypted_key) == 256 else "FAILED",
+            (
+                "Encrypted AES key có kích thước phù hợp RSA-2048."
+                if len(encrypted_key) == 256 else
+                "Kích thước RSA encrypted key không hợp lệ."
+            )
+        )
+
+        checks["rsa_decryption"] = assessment_check(
+            "PASSED" if decrypt_transaction(package) == transaction else "FAILED",
+            "Kiểm tra khả năng khôi phục khóa AES và giải mã giao dịch."
+        )
+
+        # Kiểm tra Private Key không bị lộ trong phản hồi API công khai
+        with app.test_client() as client:
+            response = client.get("/api/health")
+
+        response_text = response.get_data(as_text=True)
+
+        private_key_exposed = (
+            "-----BEGIN RSA PRIVATE KEY-----" in response_text
+            or "-----BEGIN PRIVATE KEY-----" in response_text
+        )
+
+        checks["private_key_exposure"] = assessment_check(
+            "FAILED" if private_key_exposed else "PASSED",
+            (
+                "Phát hiện nội dung Private Key trong phản hồi API."
+                if private_key_exposed else
+                "Không phát hiện nội dung Private Key trong phản hồi Health API."
+            )
+        )
+
+        # Kiểm tra quyền truy cập file Private Key
+        key_file = crypto_module.PRIVATE_KEY_FILE
+
+        if key_file.exists() and os.name == "posix":
+            permissions = key_file.stat().st_mode & 0o777
+            permission_ok = (permissions & 0o077) == 0
+
+            checks["private_key_permissions"] = assessment_check(
+                "PASSED" if permission_ok else "FAILED",
+                (
+                    "Quyền truy cập RSA Private Key không cho phép nhóm hoặc người dùng khác."
+                    if permission_ok else
+                    "Quyền truy cập RSA Private Key đang quá rộng."
+                )
+            )
+
+            evidence["private_key_permissions"] = oct(permissions)
+
+        elif key_file.exists():
+            checks["private_key_permissions"] = assessment_check(
+                "WARNING",
+                "Không thể xác minh quyền file theo cơ chế POSIX trên hệ điều hành hiện tại."
+            )
+
+        else:
+            checks["private_key_permissions"] = assessment_check(
+                "FAILED",
+                "Không tìm thấy file RSA Private Key."
+            )
+
+        # Kiểm tra Private Key sai bị RSA-OAEP từ chối
+        wrong_key_result = test_wrong_private_key(package)
+
+        checks["wrong_private_key"] = assessment_check(
+            "PASSED" if wrong_key_result.get("rejected") is True else "FAILED",
+            wrong_key_result.get(
+                "message",
+                "Không xác định được kết quả kiểm tra Private Key sai."
+            )
+        )
+
+        evidence["rsa_key_bits"] = private_key.size_in_bits()
+        evidence["encrypted_key_bytes"] = len(encrypted_key)
+        evidence["rsa_key_id"] = package.get("rsa_key_id")
+
+    except Exception as e:
+        checks["rsa_process"] = assessment_check(
+            "FAILED",
+            "Không thể hoàn thành kiểm thử RSA-OAEP."
+        )
+
+        evidence["error_type"] = type(e).__name__
+
+    return assessment_response(
+        "rsa",
+        checks,
+        evidence
+    )
+
+
+# ------------------------------------------
+# 06. INTEGRITY & DECRYPTION VERIFICATION
+# ------------------------------------------
+
+@app.route(
+    "/api/security/assessment/integrity",
+    methods=["POST"]
+)
+@login_required
+def assessment_integrity_api():
+
+    checks = {}
+    evidence = {}
+
+    transaction = {
+        "transaction_id": "ASSESS-INT-" + uuid4().hex[:12],
+        "sender": "assessment_sender",
+        "receiver": "assessment_receiver",
+        "amount": 3000,
+        "currency": "VND",
+        "content": "Integrity verification assessment",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+    try:
+        original_package = encrypt_transaction(transaction)
+
+        # Kiểm tra gói gốc
+        original_decrypted = decrypt_transaction(
+            original_package
+        )
+
+        checks["original_package"] = assessment_check(
+            "PASSED" if original_decrypted == transaction else "FAILED",
+            "Kiểm tra giải mã gói dữ liệu gốc."
+        )
+
+        # Kiểm tra thay đổi Ciphertext
+        tampered_ciphertext = copy.deepcopy(original_package)
+
+        ciphertext = base64.b64decode(
+            tampered_ciphertext["encrypted_data"],
+            validate=True
+        )
+
+        modified = bytes([ciphertext[0] ^ 1]) + ciphertext[1:]
+
+        tampered_ciphertext["encrypted_data"] = base64.b64encode(
+            modified
+        ).decode("utf-8")
+
+        try:
+            decrypt_transaction(tampered_ciphertext)
+            ciphertext_rejected = False
+        except (ValueError, KeyError, TypeError):
+            ciphertext_rejected = True
+
+        checks["ciphertext_tampering"] = assessment_check(
+            "PASSED" if ciphertext_rejected else "FAILED",
+            (
+                "AES-GCM từ chối dữ liệu Ciphertext bị thay đổi."
+                if ciphertext_rejected else
+                "AES-GCM chưa từ chối Ciphertext bị thay đổi."
+            )
+        )
+
+        # Kiểm tra thay đổi Authentication Tag
+        tampered_tag = copy.deepcopy(original_package)
+
+        tag = base64.b64decode(
+            tampered_tag["tag"],
+            validate=True
+        )
+
+        modified_tag = bytes([tag[0] ^ 1]) + tag[1:]
+
+        tampered_tag["tag"] = base64.b64encode(
+            modified_tag
+        ).decode("utf-8")
+
+        try:
+            decrypt_transaction(tampered_tag)
+            tag_rejected = False
+        except (ValueError, KeyError, TypeError):
+            tag_rejected = True
+
+        checks["tag_tampering"] = assessment_check(
+            "PASSED" if tag_rejected else "FAILED",
+            (
+                "AES-GCM từ chối Authentication Tag bị thay đổi."
+                if tag_rejected else
+                "AES-GCM chưa từ chối Authentication Tag bị thay đổi."
+            )
+        )
+
+        # Kiểm tra thay đổi AAD metadata
+        tampered_metadata = copy.deepcopy(original_package)
+
+        tampered_metadata["key_id"] += "-MODIFIED"
+
+        try:
+            decrypt_transaction(tampered_metadata)
+            metadata_rejected = False
+        except (ValueError, KeyError, TypeError):
+            metadata_rejected = True
+
+        checks["aad_tampering"] = assessment_check(
+            "PASSED" if metadata_rejected else "FAILED",
+            (
+                "AES-GCM từ chối metadata không khớp với AAD."
+                if metadata_rejected else
+                "Chưa phát hiện được metadata bị thay đổi."
+            )
+        )
+
+        evidence["original_transaction_id"] = transaction[
+            "transaction_id"
+        ]
+
+        evidence["tampering_tests"] = [
+            "Ciphertext",
+            "Authentication Tag",
+            "AAD Metadata"
+        ]
+
+    except Exception as e:
+        checks["integrity_process"] = assessment_check(
+            "FAILED",
+            "Không thể hoàn thành kiểm thử tính toàn vẹn."
+        )
+
+        evidence["error_type"] = type(e).__name__
+
+    return assessment_response(
+        "integrity",
+        checks,
+        evidence
+    )
+
+
+# ------------------------------------------
+# 07. END-TO-END VERIFICATION
+# ------------------------------------------
+
+@app.route(
+    "/api/security/assessment/e2e",
+    methods=["POST"]
+)
+@login_required
+def assessment_e2e_api():
+
+    checks = {}
+    evidence = {}
+
+    transaction = {
+        "transaction_id": "ASSESS-E2E-" + uuid4().hex[:12],
+        "sender": "assessment_sender",
+        "receiver": "assessment_receiver",
+        "amount": 5000,
+        "currency": "VND",
+        "content": "TRUEWALLET end-to-end security assessment",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+    try:
+        # Bước 1: Mã hóa giao dịch
+        package = encrypt_transaction(transaction)
+
+        checks["encryption"] = assessment_check(
+            "PASSED" if isinstance(package, dict) else "FAILED",
+            "Tạo gói giao dịch mã hóa bằng AES-GCM và RSA-OAEP."
+        )
+
+        # Bước 2: Kiểm tra các thành phần gói mã hóa
+        required_fields = [
+            "transaction_id",
+            "encrypted_data",
+            "encrypted_key",
+            "nonce",
+            "tag",
+            "key_id",
+            "rsa_key_id",
+            "key_fingerprint"
+        ]
+
+        missing_fields = [
+            field for field in required_fields
+            if field not in package
+        ]
+
+        checks["package_structure"] = assessment_check(
+            "PASSED" if not missing_fields else "FAILED",
+            (
+                "Gói mã hóa có đầy đủ các trường cần thiết."
+                if not missing_fields else
+                "Gói mã hóa đang thiếu trường dữ liệu."
+            )
+        )
+
+        # Bước 3: Giải mã bằng RSA và AES
+        decrypted = decrypt_transaction(package)
+
+        checks["decryption"] = assessment_check(
+            "PASSED" if isinstance(decrypted, dict) else "FAILED",
+            "Khôi phục khóa AES bằng RSA và giải mã dữ liệu."
+        )
+
+        # Bước 4: Đối chiếu dữ liệu
+        verified = decrypted == transaction
+
+        checks["data_verification"] = assessment_check(
+            "PASSED" if verified else "FAILED",
+            (
+                "Dữ liệu sau giải mã trùng khớp hoàn toàn dữ liệu ban đầu."
+                if verified else
+                "Dữ liệu sau giải mã không trùng khớp dữ liệu ban đầu."
+            )
+        )
+
+        evidence["transaction_id"] = transaction["transaction_id"]
+        evidence["algorithm"] = package.get("algorithm")
+        evidence["key_id"] = package.get("key_id")
+        evidence["rsa_key_id"] = package.get("rsa_key_id")
+        evidence["verified"] = verified
+
+    except Exception as e:
+        checks["end_to_end_process"] = assessment_check(
+            "FAILED",
+            "Quy trình mã hóa, giải mã và đối chiếu dữ liệu không hoàn tất."
+        )
+
+        evidence["error_type"] = type(e).__name__
+
+    return assessment_response(
+        "e2e",
+        checks,
+        evidence
+    )
+
+
+# ------------------------------------------
+# 08. GENERATE SECURITY REPORT
+# ------------------------------------------
+
+@app.route(
+    "/api/security/assessment/report",
+    methods=["POST"]
+)
+@login_required
+def assessment_report_api():
+
+    data = get_assessment_data()
+
+    if not isinstance(data, dict):
+        return jsonify({
+            "success": False,
+            "message": "Dữ liệu báo cáo không hợp lệ."
+        }), 400
+
+    assessment_id = data.get("assessment_id")
+
+    if (
+        not isinstance(assessment_id, str)
+        or not assessment_id.strip()
+        or len(assessment_id) > 100
+    ):
+        assessment_id = "ASSESS-" + uuid4().hex[:12].upper()
+
+    previous_results = data.get("previous_results", {})
+
+    if not isinstance(previous_results, dict):
+        previous_results = {}
+
+    total_tests = 0
+    passed = 0
+    warning = 0
+    failed = 0
+
+    stage_summary = {}
+
+    for stage_id, result in previous_results.items():
+
+        if not isinstance(result, dict):
+            continue
+
+        stage_status = result.get("status", "WARNING")
+
+        stage_summary[stage_id] = stage_status
+
+        checks = result.get("checks", {})
+
+        if not isinstance(checks, dict):
+            continue
+
+        for check in checks.values():
+
+            if not isinstance(check, dict):
+                continue
+
+            status = check.get("status")
+
+            if status not in ("PASSED", "WARNING", "FAILED"):
+                continue
+
+            total_tests += 1
+
+            if status == "PASSED":
+                passed += 1
+
+            elif status == "WARNING":
+                warning += 1
+
+            elif status == "FAILED":
+                failed += 1
+
+    if failed > 0:
+        overall_status = "FAILED"
+
+    elif warning > 0:
+        overall_status = "WARNING"
+
+    elif len(stage_summary) < 7:
+        overall_status = "WARNING"
+
+    else:
+        overall_status = "PASSED"
+
+    recommendations = []
+
+    if warning > 0:
+        recommendations.append(
+            "Xem xét và hoàn thiện các hạng mục đang ở trạng thái WARNING."
+        )
+
+    if failed > 0:
+        recommendations.append(
+            "Ưu tiên xử lý các bài kiểm thử FAILED trước khi đánh giá lại."
+        )
+
+    if not app.config.get("SESSION_COOKIE_SECURE"):
+        recommendations.append(
+            "Bật SESSION_COOKIE_SECURE khi triển khai ứng dụng trên HTTPS."
+        )
+
+    if not recommendations:
+        recommendations.append(
+            "Tiếp tục theo dõi nhật ký bảo mật và thực hiện kiểm thử định kỳ."
+        )
+
+    report = {
+        "assessment_id": assessment_id,
+        "target": request.host_url.rstrip("/"),
+        "total_tests": total_tests,
+        "passed": passed,
+        "warning": warning,
+        "failed": failed,
+        "overall_status": overall_status,
+        "completed_at": datetime.now(timezone.utc).isoformat(),
+        "stage_summary": stage_summary,
+        "recommendations": recommendations
+    }
+
+    return jsonify({
+        "success": True,
+        "stage": "report",
+        "status": overall_status,
+        **report
     }), 200
 if __name__ == "__main__":
     app.run(

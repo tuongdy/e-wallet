@@ -4,98 +4,598 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRUEWALLET | Hacker Simulation</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/hacker_simulation.css') }}">
-</head>
-<body>
+    <title>TRUEWALLET | Security Assessment</title>
 
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/hacker_simulation.css') }}">
+</head>
+
+<body>
 <div class="lab-container">
 
+    <!-- HEADER -->
     <header class="lab-header">
         <div>
             <p class="brand">TRUEWALLET / CYBER DEFENSE LAB</p>
-            <h1>Hacker Simulation</h1>
-            <p>Môi trường mô phỏng kiểm thử bảo mật giữa máy Hacker và máy chủ TRUEWALLET.</p>
+            <h1>Security Assessment Center</h1>
+            <p>
+                Trung tâm kiểm thử bảo mật website và đánh giá cơ chế
+                mã hóa lai AES + RSA của TRUEWALLET.
+            </p>
         </div>
-        <a href="{{ url_for('security') }}" class="back-button">← Security Center</a>
+
+        <a href="{{ url_for('security_page') }}" class="back-button">
+            ← Security Center
+        </a>
     </header>
 
+    <!-- SAFETY NOTICE -->
     <div class="safety-notice">
-        <strong>ISOLATED LAB ENVIRONMENT</strong>
+        <strong>AUTHORIZED SECURITY ASSESSMENT</strong>
         <p>
-            Chỉ sử dụng dữ liệu giả lập và mạng Host-only.
-            Không kết nối hệ thống thanh toán thật hoặc mạng bên ngoài.
+            Mọi bài kiểm thử được thực hiện trực tiếp trên ứng dụng
+            TRUEWALLET hiện tại, sử dụng dữ liệu giao dịch giả lập.
+            Không thực hiện giao dịch tiền thật hoặc kiểm thử hệ thống
+            bên ngoài phạm vi cho phép.
         </p>
     </div>
 
-    <section class="machine-grid">
-
-        <div class="machine-card hacker">
-            <div class="machine-icon">💻</div>
-            <span class="machine-label">VM 01</span>
-            <h2>Hacker Machine</h2>
-            <p>Ubuntu Desktop</p>
-            <div class="machine-status">
-                <span class="status-dot"></span>
-                <span id="hacker-status">Chưa kết nối</span>
-            </div>
-            <div class="machine-info">
-                <p>Vai trò: Máy kiểm thử</p>
-                <p>Mạng: Host-only</p>
-                <p>Địa chỉ IP: <span id="hacker-ip">Chưa cấu hình</span></p>
-            </div>
-        </div>
-
-        <div class="connection-indicator">
-            <span>↔</span>
-            <p>HOST-ONLY NETWORK</p>
-            <small id="network-status">Đang chờ kết nối</small>
-        </div>
-
-        <div class="machine-card server">
-            <div class="machine-icon">🖥️</div>
-            <span class="machine-label">VM 02</span>
-            <h2>TRUEWALLET Server</h2>
-            <p>Ubuntu Server</p>
-            <div class="machine-status">
-                <span class="status-dot" id="server-dot"></span>
-                <span id="server-status">Chưa kết nối</span>
-            </div>
-            <div class="machine-info">
-                <p>Vai trò: Máy chủ bảo vệ</p>
-                <p>Mã hóa: AES-256-GCM</p>
-                <p>Bảo vệ khóa: RSA-OAEP</p>
-            </div>
-        </div>
-
-    </section>
-
+    <!-- TARGET APPLICATION -->
     <section class="panel">
         <div class="panel-heading">
             <div>
-                <span class="section-label">LAB CONTROL</span>
-                <h2>Kiểm tra kết nối</h2>
+                <span class="section-label">TARGET APPLICATION</span>
+                <h2>TRUEWALLET Web Application</h2>
             </div>
-            <button id="check-connection">Kiểm tra kết nối</button>
+
+            <span class="assessment-status" id="target-status">
+                NOT CHECKED
+            </span>
         </div>
+
+        <div class="machine-grid">
+
+            <div class="machine-card server">
+                <div class="machine-icon">🌐</div>
+                <span class="machine-label">TARGET 01</span>
+
+                <h2>Web Application</h2>
+                <p>TRUEWALLET Flask Server</p>
+
+                <div class="machine-status">
+                    <span class="status-dot" id="server-dot"></span>
+                    <span id="server-status">Chưa kiểm tra</span>
+                </div>
+
+                <div class="machine-info">
+                    <p>
+                        Nền tảng:
+                        <strong>Flask / Python</strong>
+                    </p>
+                    <p>
+                        Giao thức:
+                        <strong id="target-protocol">
+                            HTTP / HTTPS
+                        </strong>
+                    </p>
+                    <p>
+                        Địa chỉ:
+                        <strong id="assessment-target-url">
+                            {{ request.url_root }}
+                        </strong>
+                    </p>
+                </div>
+            </div>
+
+            <div class="connection-indicator">
+                <span>↔</span>
+                <p>APPLICATION SECURITY</p>
+                <small id="network-status">
+                    Đang chờ kiểm tra
+                </small>
+            </div>
+
+            <div class="machine-card hacker">
+                <div class="machine-icon">🛡️</div>
+                <span class="machine-label">ASSESSMENT ENGINE</span>
+
+                <h2>Security Scanner</h2>
+                <p>Integrated Security Testing</p>
+
+                <div class="machine-status">
+                    <span class="status-dot"></span>
+                    <span id="hacker-status">
+                        Sẵn sàng kiểm thử
+                    </span>
+                </div>
+
+                <div class="machine-info">
+                    <p>Web Application Security</p>
+                    <p>Cryptographic Security</p>
+                    <p>End-to-End Verification</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- CONNECTION CHECK -->
+    <section class="panel">
+        <div class="panel-heading">
+            <div>
+                <span class="section-label">APPLICATION CONNECTION</span>
+                <h2>Kiểm tra trạng thái máy chủ</h2>
+            </div>
+
+            <button id="check-connection" type="button">
+                Kiểm tra kết nối
+            </button>
+        </div>
+
         <p id="connection-message">
-            Chưa thực hiện kiểm tra. Hãy kiểm tra máy chủ trước khi chạy mô phỏng.
+            Chưa thực hiện kiểm tra. Hãy xác minh trạng thái Flask Server.
         </p>
     </section>
 
+    <!-- LIVE SECURITY MONITORING -->
+    <section class="panel monitoring-panel">
+
+        <div class="panel-heading">
+            <div>
+                <span class="section-label">LIVE SECURITY MONITORING</span>
+                <h2>Giám sát hệ thống</h2>
+            </div>
+
+            <button id="refresh-monitoring" type="button">
+                Làm mới dữ liệu
+            </button>
+        </div>
+
+        <!-- SYSTEM STATUS -->
+        <div class="monitor-status-grid">
+
+            <div class="monitor-status-card">
+                <span>FLASK SERVER</span>
+                <strong id="monitor-server-status">
+                    Đang kiểm tra...
+                </strong>
+            </div>
+
+            <div class="monitor-status-card">
+                <span>SQLITE DATABASE</span>
+                <strong id="monitor-database-status">
+                    Đang kiểm tra...
+                </strong>
+            </div>
+
+            <div class="monitor-status-card">
+                <span>ENCRYPTION</span>
+                <strong id="monitor-encryption-status">
+                    Đang kiểm tra...
+                </strong>
+            </div>
+
+        </div>
+
+        <!-- STATISTICS -->
+        <div class="monitor-stat-grid">
+
+            <div class="monitor-stat-card">
+                <span>Tổng sự kiện</span>
+                <strong id="monitor-total-events">0</strong>
+            </div>
+
+            <div class="monitor-stat-card">
+                <span>Sự kiện bị chặn</span>
+                <strong id="monitor-blocked-events">0</strong>
+            </div>
+
+            <div class="monitor-stat-card">
+                <span>Kiểm thử thành công</span>
+                <strong id="monitor-success-events">0</strong>
+            </div>
+
+        </div>
+
+        <!-- EVENTS -->
+        <div class="monitor-events">
+
+            <div class="monitor-events-heading">
+                <h3>Sự kiện bảo mật từ máy chủ</h3>
+
+                <span id="monitoring-last-update">
+                    Chưa cập nhật
+                </span>
+            </div>
+
+            <div id="monitoring-events-list">
+                <p class="empty-log">
+                    Đang chờ dữ liệu từ máy chủ...
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SECTION 07 -->
+    <section class="assessment-panel" id="full-security-assessment">
+
+        <div class="assessment-header">
+            <div>
+                <span class="assessment-label">
+                    SECTION 07 / ADVANCED SECURITY LAB
+                </span>
+
+                <h2>INTEGRATED WEB & CRYPTOGRAPHY SECURITY ASSESSMENT</h2>
+
+                <p>
+                    Đánh giá tổng thể mức độ an toàn của website TRUEWALLET,
+                    tập trung vào bảo mật ứng dụng web và cơ chế mã hóa lai
+                    AES-256-GCM kết hợp RSA-OAEP.
+                </p>
+            </div>
+
+            <span id="assessment-status" class="assessment-status">
+                READY
+            </span>
+        </div>
+
+        <!-- ASSESSMENT TARGET -->
+        <div class="assessment-target">
+            <span>TARGET APPLICATION</span>
+
+            <strong>
+                TRUEWALLET
+            </strong>
+
+            <small id="assessment-target-description">
+                Web Application · Flask Backend · Hybrid Encryption
+            </small>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="assessment-controls">
+
+            <div>
+                <span class="assessment-label">
+                    SECURITY ASSESSMENT ENGINE
+                </span>
+
+                <h3>Full System Verification</h3>
+
+                <p>
+                    Thực hiện tuần tự 8 giai đoạn kiểm thử bảo mật
+                    trên ứng dụng hiện tại.
+                </p>
+            </div>
+
+            <button id="start-full-assessment" type="button">
+                ▶ START FULL ASSESSMENT
+            </button>
+
+        </div>
+
+        <!-- PROGRESS -->
+        <div class="assessment-progress-info">
+            <span id="assessment-progress-text">
+                Waiting for initialization...
+            </span>
+
+            <strong id="assessment-progress-percent">0%</strong>
+        </div>
+
+        <div class="assessment-progress-track">
+            <div id="assessment-progress-fill"></div>
+        </div>
+
+        <!-- STATISTICS -->
+        <div class="assessment-statistics">
+
+            <div class="assessment-stat">
+                <span>COMPLETED</span>
+                <strong id="assessment-completed">0</strong>
+            </div>
+
+            <div class="assessment-stat">
+                <span>PASSED</span>
+                <strong id="assessment-passed">0</strong>
+            </div>
+
+            <div class="assessment-stat">
+                <span>WARNING</span>
+                <strong id="assessment-warning">0</strong>
+            </div>
+
+            <div class="assessment-stat">
+                <span>FAILED</span>
+                <strong id="assessment-failed">0</strong>
+            </div>
+
+        </div>
+
+        <!-- PHASE 01 -->
+        <div class="assessment-section">
+
+            <div class="assessment-section-title">
+                <span>01</span>
+                <h3>SECURITY ASSESSMENT PROCESS</h3>
+            </div>
+
+            <div class="assessment-stage-list">
+
+                <div class="assessment-stage" data-stage="initialize">
+                    <span class="stage-number">01</span>
+
+                    <div>
+                        <strong>Initialize Scanner</strong>
+                        <p>
+                            Khởi tạo bộ kiểm thử và xác định
+                            website mục tiêu.
+                        </p>
+                    </div>
+
+                    <span class="stage-status">WAITING</span>
+                </div>
+
+                <div class="assessment-stage" data-stage="recon">
+                    <span class="stage-number">02</span>
+
+                    <div>
+                        <strong>Web Reconnaissance</strong>
+                        <p>
+                            Kiểm tra HTTP request, response
+                            và các endpoint được phép kiểm tra.
+                        </p>
+                    </div>
+
+                    <span class="stage-status">WAITING</span>
+                </div>
+
+                <div class="assessment-stage" data-stage="web">
+                    <span class="stage-number">03</span>
+
+                    <div>
+                        <strong>Web Security Scanning</strong>
+                        <p>
+                            Kiểm tra Security Headers, Cookie,
+                            Authentication, API và Input Validation.
+                        </p>
+                    </div>
+
+                    <span class="stage-status">WAITING</span>
+                </div>
+
+                <div class="assessment-stage" data-stage="aes">
+                    <span class="stage-number">04</span>
+
+                    <div>
+                        <strong>AES-256-GCM Verification</strong>
+                        <p>
+                            Kiểm tra mã hóa dữ liệu giao dịch,
+                            Ciphertext, Nonce và Authentication Tag.
+                        </p>
+                    </div>
+
+                    <span class="stage-status">WAITING</span>
+                </div>
+
+                <div class="assessment-stage" data-stage="rsa">
+                    <span class="stage-number">05</span>
+
+                    <div>
+                        <strong>RSA-OAEP Key Protection</strong>
+                        <p>
+                            Kiểm tra RSA-2048-OAEP-SHA256,
+                            bảo vệ và khôi phục khóa AES.
+                        </p>
+                    </div>
+
+                    <span class="stage-status">WAITING</span>
+                </div>
+
+                <div class="assessment-stage" data-stage="integrity">
+                    <span class="stage-number">06</span>
+
+                    <div>
+                        <strong>Integrity & Decryption Verification</strong>
+                        <p>
+                            Giải mã dữ liệu, xác minh Authentication Tag
+                            và kiểm tra khả năng từ chối dữ liệu bị thay đổi.
+                        </p>
+                    </div>
+
+                    <span class="stage-status">WAITING</span>
+                </div>
+
+                <div class="assessment-stage" data-stage="e2e">
+                    <span class="stage-number">07</span>
+
+                    <div>
+                        <strong>End-to-End Verification</strong>
+                        <p>
+                            Kiểm tra toàn bộ quy trình mã hóa,
+                            khôi phục khóa, giải mã và đối chiếu giao dịch.
+                        </p>
+                    </div>
+
+                    <span class="stage-status">WAITING</span>
+                </div>
+
+                <div class="assessment-stage" data-stage="report">
+                    <span class="stage-number">08</span>
+
+                    <div>
+                        <strong>Generate Security Report</strong>
+                        <p>
+                            Tổng hợp kết quả, bằng chứng,
+                            lỗi phát hiện và hướng khắc phục.
+                        </p>
+                    </div>
+
+                    <span class="stage-status">WAITING</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- PHASE 02: CRYPTOGRAPHY CHECKLIST -->
+        <div class="assessment-section">
+
+            <div class="assessment-section-title">
+                <span>02</span>
+                <h3>CRYPTOGRAPHIC SECURITY REQUIREMENTS</h3>
+            </div>
+
+            <div class="assessment-results" id="crypto-assessment-details">
+
+                <div class="monitor-status-grid">
+
+                    <div class="monitor-status-card">
+                        <span>AES ALGORITHM</span>
+                        <strong>AES-256-GCM</strong>
+                    </div>
+
+                    <div class="monitor-status-card">
+                        <span>RSA ALGORITHM</span>
+                        <strong>RSA-2048-OAEP</strong>
+                    </div>
+
+                    <div class="monitor-status-card">
+                        <span>HASH ALGORITHM</span>
+                        <strong>SHA-256</strong>
+                    </div>
+
+                </div>
+
+                <div class="assessment-stage-list">
+
+                    <div class="assessment-stage" data-crypto="aes">
+                        <span class="stage-number">01</span>
+                        <div>
+                            <strong>AES Session Key</strong>
+                            <p>Kiểm tra khóa AES được tạo và sử dụng đúng.</p>
+                        </div>
+                        <span class="stage-status">WAITING</span>
+                    </div>
+
+                    <div class="assessment-stage" data-crypto="nonce">
+                        <span class="stage-number">02</span>
+                        <div>
+                            <strong>Nonce Verification</strong>
+                            <p>Kiểm tra nonce có độ dài và cách tạo phù hợp.</p>
+                        </div>
+                        <span class="stage-status">WAITING</span>
+                    </div>
+
+                    <div class="assessment-stage" data-crypto="tag">
+                        <span class="stage-number">03</span>
+                        <div>
+                            <strong>Authentication Tag</strong>
+                            <p>Kiểm tra xác thực tính toàn vẹn dữ liệu.</p>
+                        </div>
+                        <span class="stage-status">WAITING</span>
+                    </div>
+
+                    <div class="assessment-stage" data-crypto="rsa">
+                        <span class="stage-number">04</span>
+                        <div>
+                            <strong>RSA Key Protection</strong>
+                            <p>Kiểm tra khóa AES được bảo vệ bằng RSA.</p>
+                        </div>
+                        <span class="stage-status">WAITING</span>
+                    </div>
+
+                    <div class="assessment-stage" data-crypto="private-key">
+                        <span class="stage-number">05</span>
+                        <div>
+                            <strong>RSA Private Key Protection</strong>
+                            <p>
+                                Kiểm tra khóa riêng RSA không bị
+                                tiết lộ trong response gửi tới trình duyệt.
+                            </p>
+                        </div>
+                        <span class="stage-status">WAITING</span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- PHASE 03: CONSOLE -->
+        <div class="assessment-section">
+
+            <div class="assessment-section-title">
+                <span>03</span>
+                <h3>ASSESSMENT CONSOLE</h3>
+            </div>
+
+            <div class="assessment-console">
+
+                <div class="assessment-console-header">
+                    <span>TRUEWALLET SECURITY TERMINAL</span>
+                    <span id="assessment-console-status">STANDBY</span>
+                </div>
+
+                <div id="assessment-console-output" aria-live="polite">
+                    <p>[SYSTEM] Security Assessment Engine initialized.</p>
+                    <p>[SYSTEM] Target: TRUEWALLET Web Application.</p>
+                    <p>[SYSTEM] Waiting for assessment command...</p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- PHASE 04: FINDINGS -->
+        <div class="assessment-section">
+
+            <div class="assessment-section-title">
+                <span>04</span>
+                <h3>SECURITY FINDINGS & EVIDENCE</h3>
+            </div>
+
+            <div id="assessment-results">
+                <p class="empty-log">
+                    Chưa có kết quả. Hãy bắt đầu kiểm thử.
+                </p>
+            </div>
+
+        </div>
+
+        <!-- FINAL REPORT -->
+        <div class="assessment-report"
+             id="assessment-final-report"
+             hidden>
+
+            <h3>FINAL SECURITY REPORT</h3>
+
+            <div id="assessment-report-content"></div>
+
+        </div>
+
+    </section>
+
+    <!-- OLD SIMULATION SCENARIOS -->
     <section class="panel">
+
         <span class="section-label">SIMULATION WORKSPACE</span>
+
         <h2>Khu vực kiểm thử bảo mật</h2>
+
         <p>
-            Các thao tác bên dưới chỉ kiểm tra phản ứng phòng vệ
-            bằng dữ liệu giao dịch giả lập.
+            Các kịch bản kiểm thử độc lập sử dụng dữ liệu giao dịch
+            giả lập để đánh giá cơ chế phòng vệ của TRUEWALLET.
         </p>
 
         <div class="scenario-grid">
+
             <div class="scenario-item">
                 <span>01</span>
                 <h3>Encrypted Data Inspection</h3>
-                <p>Quan sát gói dữ liệu mã hóa do hệ thống cung cấp.</p>
+                <p>
+                    Quan sát cấu trúc gói dữ liệu giao dịch
+                    đã được mã hóa.
+                </p>
+
                 <button class="lab-action" data-scenario="inspection">
                     Kiểm tra dữ liệu
                 </button>
@@ -104,7 +604,11 @@
             <div class="scenario-item">
                 <span>02</span>
                 <h3>Data Integrity Check</h3>
-                <p>Kiểm tra khả năng phát hiện dữ liệu thử nghiệm bị thay đổi.</p>
+                <p>
+                    Kiểm tra khả năng phát hiện dữ liệu thử nghiệm
+                    bị thay đổi.
+                </p>
+
                 <button class="lab-action" data-scenario="integrity">
                     Kiểm tra toàn vẹn
                 </button>
@@ -113,7 +617,11 @@
             <div class="scenario-item">
                 <span>03</span>
                 <h3>Replay Protection</h3>
-                <p>Kiểm tra cơ chế phát hiện mã giao dịch giả lập trùng lặp.</p>
+                <p>
+                    Kiểm tra cơ chế phát hiện mã giao dịch
+                    giả lập bị gửi lại.
+                </p>
+
                 <button class="lab-action" data-scenario="replay">
                     Kiểm tra chống gửi lại
                 </button>
@@ -122,34 +630,50 @@
             <div class="scenario-item">
                 <span>04</span>
                 <h3>Hybrid Encryption</h3>
-                <p>Quan sát quy trình AES mã hóa dữ liệu và RSA bảo vệ khóa phiên.</p>
+                <p>
+                    Kiểm tra AES mã hóa dữ liệu và RSA
+                    bảo vệ khóa phiên.
+                </p>
+
                 <button class="lab-action" data-scenario="hybrid">
                     Kiểm tra AES + RSA
                 </button>
             </div>
+
         </div>
     </section>
 
+    <!-- LAB LOG -->
     <section class="panel">
+
         <div class="panel-heading">
             <div>
-                <span class="section-label">LIVE SECURITY MONITORING</span>
+                <span class="section-label">ASSESSMENT ACTIVITY</span>
                 <h2>Nhật ký kiểm thử</h2>
             </div>
-            <button id="clear-lab-log">Xóa nhật ký hiển thị</button>
+
+            <button id="clear-lab-log" type="button">
+                Xóa nhật ký hiển thị
+            </button>
         </div>
 
         <div id="lab-log" class="lab-log">
-            <p class="empty-log">Chưa có sự kiện kiểm thử.</p>
+            <p class="empty-log">
+                Chưa có sự kiện kiểm thử.
+            </p>
         </div>
+
     </section>
 
+    <!-- FOOTER -->
     <footer>
-        TRUEWALLET CYBER DEFENSE LAB · EDUCATIONAL SIMULATION
+        TRUEWALLET CYBER DEFENSE LAB
+        · WEB APPLICATION & CRYPTOGRAPHIC SECURITY ASSESSMENT
     </footer>
 
 </div>
 
 <script src="{{ url_for('static', filename='js/hacker_simulation.js') }}"></script>
+
 </body>
 </html>
