@@ -1,0 +1,828 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Center | TrueWallet</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/security.css') }}">
+
+    <script src="{{ url_for('static', filename='js/security.js') }}"
+            defer></script>
+</head>
+
+<body>
+<div class="app-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <h2>TrueWallet</h2>
+            <p>Digital Wallet</p>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('home') }}" class="nav-item">
+                <span class="nav-icon">⌂</span>
+                <span>Tổng quan</span>
+            </a>
+
+            <a href="{{ url_for('transfer') }}" class="nav-item">
+                <span class="nav-icon">↗</span>
+                <span>Chuyển tiền</span>
+            </a>
+
+            <a href="{{ url_for('inbox') }}" class="nav-item">
+                <span class="nav-icon">✉</span>
+                <span>Hộp thư</span>
+            </a>
+
+            <a href="{{ url_for('encryption_page') }}" class="nav-item">
+                <span class="nav-icon">🔐</span>
+                <span>Mã hóa AES + RSA</span>
+            </a>
+
+            <a href="{{ url_for('result_page') }}" class="nav-item">
+                <span class="nav-icon">▤</span>
+                <span>Kết quả giao dịch</span>
+            </a>
+
+            <a href="{{ url_for('security_page') }}"
+               class="nav-item active">
+                <span class="nav-icon">🛡</span>
+                <span>Kiểm thử bảo mật</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <span>TrueWallet Security</span>
+            <small>Hybrid Encryption System</small>
+        </div>
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="security-main">
+
+        <!-- PAGE HEADER -->
+        <header class="security-header">
+            <div>
+                <p class="eyebrow">TRUEWALLET / SECURITY CENTER</p>
+
+                <h1>Trung tâm kiểm thử bảo mật</h1>
+
+                <p class="header-description">
+                    Đánh giá cơ chế bảo vệ dữ liệu giao dịch
+                    trong mô hình mã hóa lai AES-256-GCM và RSA-OAEP.
+                </p>
+            </div>
+
+            <div class="security-shield">🛡</div>
+        </header>
+
+
+        <!-- AUTOMATED SECURITY ASSESSMENT -->
+        <section class="security-intro">
+            <div>
+                <h2>Automated Security Assessment</h2>
+
+                <p>
+                    Thực hiện 8 bài kiểm thử tự động để xác minh
+                    cấu trúc gói mã hóa, khả năng giải mã, xác thực
+                    dữ liệu và quản lý khóa phiên.
+                </p>
+
+                <span class="security-mode">
+                    ● SIMULATION ENVIRONMENT
+                </span>
+            </div>
+
+            <button id="run-tests-btn" class="run-tests-btn">
+                ▶ Chạy 8 bài kiểm thử
+            </button>
+        </section>
+
+
+        <!-- AUTOMATED TEST SUMMARY -->
+        <section class="summary-grid">
+
+            <article class="summary-card">
+                <span>Tổng bài kiểm thử</span>
+                <strong id="total-tests">--</strong>
+                <small>Test cases</small>
+            </article>
+
+            <article class="summary-card passed-card">
+                <span>Đạt yêu cầu</span>
+                <strong id="passed-tests">--</strong>
+                <small>Passed</small>
+            </article>
+
+            <article class="summary-card failed-card">
+                <span>Chưa đạt</span>
+                <strong id="failed-tests">--</strong>
+                <small>Failed</small>
+            </article>
+
+            <article class="summary-card status-card">
+                <span>Trạng thái tổng thể</span>
+                <strong id="overall-status">Chưa chạy</strong>
+                <small id="last-run">
+                    Chưa có kết quả kiểm thử
+                </small>
+            </article>
+
+        </section>
+
+
+        <!-- AUTOMATED TEST RESULTS -->
+        <section class="test-section">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Security Test Results</h2>
+                    <p>
+                        Kết quả chi tiết của các bài kiểm thử
+                        bảo mật tự động.
+                    </p>
+                </div>
+
+                <span id="test-count-label">0 bài kiểm thử</span>
+            </div>
+
+
+            <div class="test-groups">
+
+                <!-- AES -->
+                <div class="test-group">
+                    <div class="group-heading">
+                        <span class="group-icon">🔐</span>
+
+                        <div>
+                            <h3>AES-256-GCM</h3>
+                            <p>
+                                Đánh giá cấu trúc gói mã hóa
+                                và khả năng giải mã dữ liệu giao dịch.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div id="aes-results" class="test-list">
+                        <p class="empty-result">
+                            Chưa có kết quả. Hãy chạy kiểm thử.
+                        </p>
+                    </div>
+                </div>
+
+
+                <!-- DATA INTEGRITY -->
+                <div class="test-group">
+                    <div class="group-heading">
+                        <span class="group-icon">🛡</span>
+
+                        <div>
+                            <h3>Data Integrity</h3>
+                            <p>
+                                Đánh giá khả năng phát hiện và từ chối
+                                dữ liệu không còn hợp lệ.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div id="integrity-results" class="test-list">
+                        <p class="empty-result">
+                            Chưa có kết quả. Hãy chạy kiểm thử.
+                        </p>
+                    </div>
+                </div>
+
+
+                <!-- RSA -->
+                <div class="test-group">
+                    <div class="group-heading">
+                        <span class="group-icon">🔑</span>
+
+                        <div>
+                            <h3>RSA-OAEP-SHA256</h3>
+                            <p>
+                                Kiểm tra khả năng bảo vệ khóa phiên AES
+                                bằng cơ chế mã hóa khóa công khai RSA.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div id="rsa-results" class="test-list">
+                        <p class="empty-result">
+                            Chưa có kết quả. Hãy chạy kiểm thử.
+                        </p>
+                    </div>
+                </div>
+
+
+                <!-- KEY MANAGEMENT -->
+                <div class="test-group">
+                    <div class="group-heading">
+                        <span class="group-icon">🗝</span>
+
+                        <div>
+                            <h3>Key Management</h3>
+                            <p>
+                                Kiểm tra tính duy nhất và khả năng
+                                khôi phục khóa phiên AES.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div id="key-results" class="test-list">
+                        <p class="empty-result">
+                            Chưa có kết quả. Hãy chạy kiểm thử.
+                        </p>
+                    </div>
+                </div>
+
+
+                <!-- REPLAY ATTACK -->
+                <div class="test-group">
+                    <div class="group-heading">
+                        <span class="group-icon">🔄</span>
+
+                        <div>
+                            <h3>Replay Attack</h3>
+                            <p>
+                                Kiểm tra nguyên lý phát hiện
+                                mã giao dịch trùng lặp tại cơ sở dữ liệu.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div id="replay-results" class="test-list">
+                        <p class="empty-result">
+                            Chưa có kết quả. Hãy chạy kiểm thử.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+<!-- LIVE SECURITY MONITORING -->
+<section class="live-monitoring">
+
+    <div class="monitoring-header">
+        <div>
+            <p class="eyebrow">TRUEWALLET / LIVE MONITORING</p>
+            <h2>Live Security Monitoring</h2>
+            <p>Theo dõi trạng thái hệ thống và các sự kiện bảo mật.</p>
+        </div>
+
+        <span id="monitoring-connection" class="monitoring-badge">
+            CONNECTING...
+        </span>
+    </div>
+
+    <!-- SYSTEM STATUS -->
+    <div class="monitoring-status-grid">
+
+        <article class="monitoring-card">
+            <span>APPLICATION SERVER</span>
+            <strong id="monitor-server">--</strong>
+            <small>Flask Application</small>
+        </article>
+
+        <article class="monitoring-card">
+            <span>DATABASE</span>
+            <strong id="monitor-database">--</strong>
+            <small>SQLite Database</small>
+        </article>
+
+        <article class="monitoring-card">
+            <span>ENCRYPTION</span>
+            <strong id="monitor-encryption">--</strong>
+            <small>Hybrid Encryption</small>
+        </article>
+
+    </div>
+
+    <!-- EVENT SUMMARY -->
+    <div class="monitoring-summary-grid">
+
+        <article class="monitoring-summary-card">
+            <span>Total Events</span>
+            <strong id="monitor-total-events">0</strong>
+        </article>
+
+        <article class="monitoring-summary-card">
+            <span>Blocked Events</span>
+            <strong id="monitor-blocked-events">0</strong>
+        </article>
+
+        <article class="monitoring-summary-card">
+            <span>Successful Events</span>
+            <strong id="monitor-success-events">0</strong>
+        </article>
+
+    </div>
+
+    <!-- LIVE EVENT TABLE -->
+    <div class="monitoring-events">
+
+        <div class="section-heading">
+            <div>
+                <h3>Security Event Log</h3>
+                <p>Các sự kiện được ghi nhận từ backend.</p>
+            </div>
+
+            <button type="button" id="refresh-monitoring">
+                ↻ Refresh
+            </button>
+        </div>
+
+        <div class="monitoring-table-wrapper">
+            <table class="monitoring-table">
+                <thead>
+                    <tr>
+                        <th>TIME</th>
+                        <th>EVENT</th>
+                        <th>SCENARIO</th>
+                        <th>HTTP</th>
+                        <th>RESULT</th>
+                        <th>MESSAGE</th>
+                    </tr>
+                </thead>
+
+                <tbody id="monitoring-events-list">
+                    <tr>
+                        <td colspan="6">
+                            Đang tải dữ liệu...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p id="monitoring-last-update">
+            Chưa cập nhật dữ liệu.
+        </p>
+
+    </div>
+
+</section>
+
+
+        <!-- ATTACK SIMULATION LAB -->
+        <section class="attack-lab">
+
+            <div class="attack-lab-header">
+                <div>
+                    <p class="eyebrow">TRUEWALLET / CYBER DEFENSE LAB</p>
+
+                    <h2>Attack Simulation Center</h2>
+
+                    <p>
+                        Trải nghiệm các tình huống đe dọa giả lập,
+                        theo dõi quá trình xử lý và quan sát
+                        cơ chế phòng vệ của hệ thống.
+                    </p>
+                </div>
+
+                <div class="lab-status">
+                    <span class="status-dot"></span>
+                    ISOLATED SIMULATION
+                </div>
+            </div>
+
+
+            <!-- SYSTEM ARCHITECTURE -->
+            <div class="simulation-topology">
+
+                <div class="topology-node">
+                    <span class="topology-icon">💻</span>
+                    <strong>CLIENT</strong>
+                    <small>Transaction Sender</small>
+                    <span class="node-status">SIMULATED</span>
+                </div>
+
+                <div class="topology-connection">
+                    <span>ENCRYPTED DATA</span>
+                    <div class="connection-line"></div>
+                </div>
+
+                <div class="topology-node attacker-node">
+                    <span class="topology-icon">🕵️</span>
+                    <strong>ATTACK SIMULATOR</strong>
+                    <small>Controlled Test Environment</small>
+                    <span class="node-status">SANDBOX</span>
+                </div>
+
+                <div class="topology-connection">
+                    <span>SECURE CHANNEL</span>
+                    <div class="connection-line"></div>
+                </div>
+
+                <div class="topology-node server-node">
+                    <span class="topology-icon">🖥️</span>
+                    <strong>SERVER</strong>
+                    <small>Security Processing</small>
+                    <span class="node-status">PROTECTED</span>
+                </div>
+
+            </div>
+
+
+            <!-- ATTACK SCENARIOS -->
+            <div class="scenario-heading">
+                <div>
+                    <h3>Attack Scenarios</h3>
+                    <p>
+                        Chọn một kịch bản để xem quy trình
+                        mô phỏng và cơ chế phòng vệ tương ứng.
+                    </p>
+                </div>
+
+                <span>06 SCENARIOS + 01 VM LAB</span>
+            </div>
+
+
+            <div class="scenario-grid">
+
+
+                <button class="scenario-card"
+                        data-scenario="interception"
+                        type="button">
+
+                    <span class="scenario-number">01</span>
+                    <span class="scenario-icon">👁️</span>
+
+                    <strong>Data Interception</strong>
+
+                    <p>
+                        Quan sát gói dữ liệu giao dịch
+                        trong quá trình truyền tải.
+                    </p>
+
+                    <span class="scenario-protection">
+                        AES-256-GCM
+                    </span>
+
+                    <span class="scenario-action">
+                        SELECT SCENARIO →
+                    </span>
+                </button>
+
+
+                <button class="scenario-card"
+                        data-scenario="tampering"
+                        type="button">
+
+                    <span class="scenario-number">02</span>
+                    <span class="scenario-icon">⚠️</span>
+
+                    <strong>Data Tampering</strong>
+
+                    <p>
+                        Mô phỏng thay đổi dữ liệu mã hóa
+                        và quan sát phản ứng xác thực.
+                    </p>
+
+                    <span class="scenario-protection">
+                        GCM AUTHENTICATION TAG
+                    </span>
+
+                    <span class="scenario-action">
+                        SELECT SCENARIO →
+                    </span>
+                </button>
+
+
+                <button class="scenario-card"
+                        data-scenario="replay"
+                        type="button">
+
+                    <span class="scenario-number">03</span>
+                    <span class="scenario-icon">🔄</span>
+
+                    <strong>Replay Attack</strong>
+
+                    <p>
+                        Mô phỏng gửi lại một giao dịch
+                        đã được ghi nhận trước đó.
+                    </p>
+
+                    <span class="scenario-protection">
+                        TRANSACTION ID
+                    </span>
+
+                    <span class="scenario-action">
+                        SELECT SCENARIO →
+                    </span>
+                </button>
+
+
+                <button class="scenario-card"
+                        data-scenario="rsa"
+                        type="button">
+
+                    <span class="scenario-number">04</span>
+                    <span class="scenario-icon">🔑</span>
+
+                    <strong>RSA Key Attack</strong>
+
+                    <p>
+                        Kiểm tra khả năng từ chối
+                        khóa riêng RSA không tương ứng.
+                    </p>
+
+                    <span class="scenario-protection">
+                        RSA-OAEP-SHA256
+                    </span>
+
+                    <span class="scenario-action">
+                        SELECT SCENARIO →
+                    </span>
+                </button>
+
+
+                <button class="scenario-card"
+                        data-scenario="unauthorized"
+                        type="button">
+
+                    <span class="scenario-number">05</span>
+                    <span class="scenario-icon">🚫</span>
+
+                    <strong>Unauthorized Access</strong>
+
+                    <p>
+                        Kiểm tra phản hồi của hệ thống
+                        trước yêu cầu chưa xác thực.
+                    </p>
+
+                    <span class="scenario-protection">
+                        SESSION AUTHENTICATION
+                    </span>
+
+                    <span class="scenario-action">
+                        SELECT SCENARIO →
+                    </span>
+                </button>
+
+
+                <button class="scenario-card"
+                        data-scenario="hybrid"
+                        type="button">
+
+                    <span class="scenario-number">06</span>
+                    <span class="scenario-icon">🔐</span>
+
+                    <strong>Hybrid Encryption</strong>
+
+                    <p>
+                        Trình diễn quy trình mã hóa,
+                        khôi phục khóa và giải mã AES + RSA.
+                    </p>
+
+                    <span class="scenario-protection">
+                        AES + RSA
+                    </span>
+
+                    <span class="scenario-action">
+                        SELECT SCENARIO →
+                    </span>
+                </button>
+
+           </div>
+
+<!-- HACKER SIMULATION LINK -->
+<div class="hacker-simulation-wrapper">
+    <a href="{{ url_for('hacker_simulation') }}"
+       class="hacker-simulation-card">
+
+        <div class="hacker-card-number">07</div>
+
+        <div class="hacker-card-icon">💻</div>
+
+        <div class="hacker-card-content">
+            <h3>Hacker Simulation</h3>
+            <p>
+                Mở môi trường máy Hacker giả lập, kiểm tra kết nối
+                với máy chủ TRUEWALLET và theo dõi cơ chế phòng vệ.
+            </p>
+            <span>ISOLATED VM LAB</span>
+        </div>
+
+        <div class="hacker-card-action">
+            OPEN HACKER LAB →
+        </div>
+    </a>
+</div>
+
+<!-- SIMULATION WORKSPACE -->
+<div class="simulation-workspace" id="simulation-workspace">
+                <div class="workspace-header">
+                    <div>
+                        <p class="eyebrow">SIMULATION WORKSPACE</p>
+
+                        <h3 id="scenario-title">
+                            Chưa chọn kịch bản
+                        </h3>
+
+                        <p id="scenario-description">
+                            Chọn một tình huống phía trên để xem
+                            mục tiêu, quy trình và cơ chế bảo vệ.
+                        </p>
+                    </div>
+
+                    <span id="scenario-status"
+                          class="simulation-status">
+                        STANDBY
+                    </span>
+                </div>
+
+
+                <!-- SCENARIO INFORMATION -->
+                <div class="scenario-information">
+
+                    <div class="information-card">
+                        <span>THREAT TYPE</span>
+                        <strong id="scenario-threat">--</strong>
+                    </div>
+
+                    <div class="information-card">
+                        <span>PROTECTION</span>
+                        <strong id="scenario-defense">--</strong>
+                    </div>
+
+                    <div class="information-card">
+                        <span>EXPECTED RESULT</span>
+                        <strong id="scenario-expected">--</strong>
+                    </div>
+
+                </div>
+
+
+                <!-- SIMULATION CONTROLS -->
+                <div class="simulation-controls">
+
+                    <button id="start-simulation-btn"
+                            class="start-simulation-btn"
+                            type="button"
+                            disabled>
+                        ▶ Bắt đầu mô phỏng
+                    </button>
+
+                    <button id="reset-simulation-btn"
+                            class="reset-simulation-btn"
+                            type="button">
+                        ↻ Đặt lại
+                    </button>
+
+                </div>
+
+
+                <!-- EXECUTION PROGRESS -->
+                <div class="execution-section">
+
+                    <div class="execution-heading">
+                        <h4>Execution Process</h4>
+
+                        <span id="execution-counter">
+                            0 / 0 STEPS
+                        </span>
+                    </div>
+
+                    <div id="execution-steps"
+                         class="execution-steps">
+
+                        <p class="empty-result">
+                            Quy trình xử lý sẽ xuất hiện tại đây
+                            sau khi chọn kịch bản.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- DATA INSPECTION -->
+                <div class="inspection-grid">
+
+                    <div class="inspection-card">
+
+                        <div class="inspection-heading">
+                            <span>📦</span>
+                            <h4>Transaction Data</h4>
+                        </div>
+
+                        <pre id="simulation-data">Chưa có dữ liệu kiểm thử.</pre>
+
+                    </div>
+
+
+                    <div class="inspection-card">
+
+                        <div class="inspection-heading">
+                            <span>🛡️</span>
+                            <h4>Security Analysis</h4>
+                        </div>
+
+                        <div id="security-analysis">
+                            Chưa có kết quả phân tích.
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- EVENT LOG -->
+                <div class="event-log-section">
+
+                    <div class="execution-heading">
+                        <h4>System Event Log</h4>
+                        <span id="event-log-count">0 EVENTS</span>
+                    </div>
+
+                    <div id="simulation-event-log"
+                         class="simulation-event-log"
+                         aria-live="polite">
+
+                        <p class="empty-result">
+                            Nhật ký hoạt động sẽ xuất hiện
+                            khi bắt đầu mô phỏng.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- FINAL RESULT -->
+                <div id="simulation-result"
+                     class="simulation-result"
+                     aria-live="polite">
+
+                    <strong>Simulation Result</strong>
+
+                    <p>
+                        Chưa có tình huống nào được thực hiện.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- SECURITY SCOPE AND LIMITATIONS -->
+        <section class="security-note">
+
+            <div class="note-heading">
+                <span>ⓘ</span>
+                <strong>Phạm vi và giới hạn kiểm thử</strong>
+            </div>
+
+            <p>
+                Hệ thống sử dụng dữ liệu giao dịch giả lập,
+                không thực hiện chuyển tiền thật hoặc thay đổi
+                số dư người dùng.
+            </p>
+
+            <p>
+                Attack Simulation Center minh họa các tình huống
+                trong môi trường kiểm thử độc lập, không thực hiện
+                bắt gói tin hoặc tấn công trên mạng thực tế.
+            </p>
+
+            <p>
+                Kết quả PASS cho biết hệ thống đáp ứng điều kiện
+                của bài kiểm thử tương ứng, không đồng nghĩa với
+                việc toàn bộ hệ thống đã được chứng minh an toàn
+                tuyệt đối.
+            </p>
+
+            <p>
+                REPLAY-01 kiểm tra nguyên lý phát hiện mã giao dịch
+                trùng lặp tại SQLite. Kết quả này không thay thế
+                cho kiểm thử chống gửi lại giao dịch trên toàn bộ
+                quy trình API chuyển tiền.
+            </p>
+
+        </section>
+
+
+        <!-- FOOTER -->
+        <footer class="security-footer">
+            TRUEWALLET SECURITY CENTER
+            <span>Hybrid Encryption Simulation</span>
+        </footer>
+
+    </main>
+</div>
+</body>
+</html>

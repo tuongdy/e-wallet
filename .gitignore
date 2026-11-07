@@ -218,3 +218,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# TRUEWALLET local database and backups
+*.db
+*.db-journal
+*_backup.py
+crypto_persistence_test.json
+
+# Temporary editor files
+*~

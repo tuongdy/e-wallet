@@ -1,0 +1,181 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký | TrueWallet</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .auth-page {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            background: radial-gradient(ellipse at top left, #8b5cf625, transparent 45%), #121218;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 430px;
+            padding: 34px;
+            background: #1e1e29;
+            border: 1px solid #393347;
+            border-radius: 22px;
+        }
+
+        .auth-brand {
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 25px;
+            font-weight: 800;
+        }
+
+        .auth-card h1 {
+            text-align: center;
+            font-size: 25px;
+        }
+
+        .auth-subtitle {
+            margin: 8px 0 22px;
+            color: #9696aa;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .auth-card label {
+            display: block;
+            margin: 15px 0 7px;
+            font-size: 13px;
+        }
+
+        .auth-card input {
+            width: 100%;
+            padding: 13px;
+            color: white;
+            background: #121218;
+            border: 1px solid #393947;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .auth-card input:focus {
+            border-color: #a78bfa;
+        }
+
+        .auth-button {
+            width: 100%;
+            margin-top: 23px;
+            padding: 14px;
+            color: white;
+            background: linear-gradient(110deg, #8b5cf6, #6d45d9);
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .auth-button:hover {
+            filter: brightness(1.12);
+        }
+
+        .auth-error {
+            margin-top: 14px;
+            padding: 10px;
+            color: #fca5a5;
+            background: #ef444415;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+
+        .auth-footer {
+            margin-top: 22px;
+            color: #9696aa;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .auth-footer a {
+            color: #a78bfa;
+            font-weight: 700;
+        }
+
+        .auth-hint {
+            margin-top: 12px;
+            color: #9696aa;
+            font-size: 11px;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="auth-page">
+        <section class="auth-card">
+            <div class="auth-brand">
+                <span style="color:#a78bfa">T</span>
+                True<span style="color:#a78bfa">Wallet</span>
+            </div>
+
+            <h1>Tạo tài khoản</h1>
+            <p class="auth-subtitle">Đăng ký để trải nghiệm ví điện tử demo</p>
+
+            <form method="POST" action="{{ url_for('register') }}">
+                <label for="username">Tên đăng nhập</label>
+                <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    minlength="3"
+                    maxlength="30"
+                    pattern="[A-Za-z0-9_-]+"
+                    placeholder="Ví dụ: nhien123"
+                    autocomplete="username"
+                    required
+                >
+
+                <label for="password">Mật khẩu riêng</label>
+                <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    minlength="8"
+                    maxlength="128"
+                    placeholder="Ít nhất 8 ký tự"
+                    autocomplete="new-password"
+                    required
+                >
+
+                <label for="confirm_password">Xác nhận mật khẩu</label>
+                <input
+                    id="confirm_password"
+                    name="confirm_password"
+                    type="password"
+                    minlength="8"
+                    maxlength="128"
+                    placeholder="Nhập lại mật khẩu"
+                    autocomplete="new-password"
+                    required
+                >
+
+                {% if error %}
+                    <div class="auth-error">{{ error }}</div>
+                {% endif %}
+
+                <p class="auth-hint">
+                    Mật khẩu sẽ được băm trước khi lưu vào cơ sở dữ liệu.
+                </p>
+
+                <button class="auth-button" type="submit">
+                    Đăng ký tài khoản →
+                </button>
+            </form>
+
+            <p class="auth-footer">
+                Đã có tài khoản?
+                <a href="{{ url_for('login') }}">Đăng nhập</a>
+            </p>
+        </section>
+    </main>
+</body>
+</html>

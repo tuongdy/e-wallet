@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrueWallet | Hộp thư nhận tiền</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/inbox.css') }}">
+</head>
+
+<body>
+    <div class="app-container">
+
+        <aside class="sidebar">
+            <a href="{{ url_for('home') }}" class="brand">
+                <div class="brand-icon">T</div>
+                <span>True<span class="brand-highlight">Wallet</span></span>
+            </a>
+
+            <div class="nav-label">MENU CHÍNH</div>
+
+            <nav class="navigation">
+                <a href="{{ url_for('home') }}" class="nav-item">
+                    <span class="nav-icon">▦</span>
+                    <span>Tổng quan</span>
+                </a>
+
+        <a href="{{ url_for('transfer') }}" class="nav-item">
+                    <span class="nav-icon">↗</span>
+                    <span>Chuyển tiền</span>
+                </a>
+
+           <a href="{{ url_for('inbox') }}" class="nav-item active">
+    <span class="nav-icon">▤</span>
+    <span>Hộp thư nhận tiền</span>
+</a>
+
+                <a href="{{ url_for('encryption_page') }}" class="nav-item">
+                    <span class="nav-icon">♢</span>
+                    <span>Mã hóa AES + RSA</span>
+                </a>
+
+                <a href="{{ url_for('result_page') }}" class="nav-item">
+                    <span class="nav-icon">▤</span>
+                    <span>Kết quả giao dịch</span>
+                </a>
+            </nav>
+
+            <div class="security-card">
+                <div class="security-icon">◆</div>
+                <h3>Bảo mật giao dịch</h3>
+                <p>Minh họa mô hình mã hóa lai AES + RSA.</p>
+                <a href="{{ url_for('encryption_page') }}">Tìm hiểu thêm →</a>
+            </div>
+
+            <a href="{{ url_for('logout') }}" class="logout-link">
+                <span>⇥</span> Đăng xuất
+            </a>
+        </aside>
+
+        <main class="main-content">
+
+            <div class="topbar">
+                <div>
+                    <p class="eyebrow">TRUEWALLET • GIAO DỊCH</p>
+                    <h1>Hộp thư nhận tiền</h1>
+                </div>
+            </div>
+
+            <section class="section-block inbox-section">
+                <div class="section-heading">
+                    <div>
+                        <h2>Giao dịch được gửi đến bạn</h2>
+                        <p>Các giao dịch đang chờ xác nhận hoặc đã nhận.</p>
+                    </div>
+                </div>
+
+                <div id="alert"></div>
+
+                <div id="transaction-list">
+                    Đang tải giao dịch...
+                </div>
+            </section>
+
+            <footer class="footer">
+                <span>© 2026 TrueWallet — Dự án học tập về mã hóa lai AES + RSA.</span>
+                <span class="footer-security">◆ MÔI TRƯỜNG DEMO</span>
+            </footer>
+
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/inbox.js') }}"></script>
+</body>
+</html>

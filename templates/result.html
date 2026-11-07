@@ -1,0 +1,282 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Results | TrueWallet</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/result.css') }}">
+
+    <script src="{{ url_for('static', filename='js/result.js') }}"
+            defer></script>
+</head>
+
+<body>
+<div class="app-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <h2>TrueWallet</h2>
+            <p>Digital Wallet</p>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('home') }}" class="nav-item">
+                <span class="nav-icon">⌂</span>
+                <span>Tổng quan</span>
+            </a>
+
+            <a href="{{ url_for('transfer') }}" class="nav-item">
+                <span class="nav-icon">↗</span>
+                <span>Chuyển tiền</span>
+            </a>
+
+            <a href="{{ url_for('inbox') }}" class="nav-item">
+                <span class="nav-icon">✉</span>
+                <span>Hộp thư</span>
+            </a>
+
+            <a href="{{ url_for('encryption_page') }}" class="nav-item">
+                <span class="nav-icon">🔐</span>
+                <span>Mã hóa AES + RSA</span>
+            </a>
+
+            <a href="{{ url_for('result_page') }}"
+               class="nav-item active">
+                <span class="nav-icon">▤</span>
+                <span>Kết quả giao dịch</span>
+            </a>
+
+            <a href="{{ url_for('security_page') }}" class="nav-item">
+                <span class="nav-icon">🛡</span>
+                <span>Kiểm thử bảo mật</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <span>TrueWallet Security</span>
+            <small>Hybrid Encryption System</small>
+        </div>
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="result-main">
+
+        <!-- PAGE HEADER -->
+        <header class="result-header">
+            <div>
+                <p class="result-eyebrow">TRUEWALLET / TRANSACTIONS</p>
+                <h1>Kết quả giao dịch</h1>
+                <p class="result-subtitle">
+                    Theo dõi thông tin và trạng thái xử lý giao dịch trong hệ thống.
+                </p>
+            </div>
+
+            <div class="result-header-icon">↗</div>
+        </header>
+
+
+        <!-- TRANSACTION OVERVIEW -->
+        <section class="result-overview">
+            <div class="overview-heading">
+                <div>
+                    <p class="section-eyebrow">TRANSACTION OVERVIEW</p>
+                    <h2>Thông tin giao dịch</h2>
+                </div>
+
+                <span id="transaction-status"
+                      class="status-badge status-pending">
+                    Chưa có giao dịch
+                </span>
+            </div>
+
+            <div class="transaction-amount">
+                <span>Số tiền giao dịch</span>
+                <h2 id="result-amount">-- VND</h2>
+                <p id="result-transaction-id">Transaction ID: --</p>
+            </div>
+
+            <div class="transaction-info-grid">
+                <div class="info-item">
+                    <span>Người gửi</span>
+                    <strong id="result-sender">--</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Người nhận</span>
+                    <strong id="result-receiver">--</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Nội dung giao dịch</span>
+                    <strong id="result-content">--</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Thời gian</span>
+                    <strong id="result-timestamp">--</strong>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- PROCESSING STATUS -->
+        <section class="result-section">
+            <div class="section-heading">
+                <div>
+                    <p class="section-eyebrow">PROCESSING STATUS</p>
+                    <h2>Quy trình xử lý giao dịch</h2>
+                    <p>
+                        Theo dõi các bước xử lý dữ liệu trong hệ thống.
+                    </p>
+                </div>
+            </div>
+
+            <div id="processing-steps" class="processing-steps">
+                <div class="empty-state">
+                    <span class="empty-icon">↗</span>
+                    <strong>Chưa có dữ liệu xử lý</strong>
+                    <p>
+                        Hãy tạo giao dịch tại trang Chuyển tiền để xem tiến trình.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- DATA COMPARISON -->
+        <section class="result-section">
+            <div class="section-heading">
+                <div>
+                    <p class="section-eyebrow">DATA VERIFICATION</p>
+                    <h2>Đối chiếu dữ liệu giao dịch</h2>
+                    <p>
+                        So sánh dữ liệu ban đầu với dữ liệu được khôi phục sau giải mã.
+                    </p>
+                </div>
+            </div>
+
+            <div class="comparison-grid">
+
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <div>
+                            <span class="data-label">CLIENT DATA</span>
+                            <h3>Dữ liệu gốc</h3>
+                        </div>
+
+                        <span class="data-icon">01</span>
+                    </div>
+
+                    <pre id="original-data" class="json-display">Chưa có dữ liệu giao dịch.</pre>
+                </div>
+
+
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <div>
+                            <span class="data-label">SERVER DATA</span>
+                            <h3>Dữ liệu sau giải mã</h3>
+                        </div>
+
+                        <span class="data-icon">02</span>
+                    </div>
+
+                    <pre id="decrypted-data" class="json-display">Chưa có dữ liệu giải mã.</pre>
+                </div>
+
+            </div>
+
+            <div id="verification-result"
+                 class="verification-message">
+                Chưa có giao dịch để đối chiếu.
+            </div>
+        </section>
+
+
+        <!-- TRANSACTION HISTORY -->
+<section class="result-section">
+    <div class="section-heading history-heading">
+        <div>
+            <p class="section-eyebrow">TRANSACTION HISTORY</p>
+            <h2>Lịch sử giao dịch</h2>
+            <p>
+                Danh sách các giao dịch đã được hệ thống xử lý.
+            </p>
+        </div>
+
+        <button id="refresh-history-btn"
+                class="refresh-btn"
+                type="button">
+            ↻ Làm mới
+        </button>
+    </div>
+
+    <!-- SEARCH TRANSACTIONS -->
+    <div class="history-search">
+        <div class="history-search-input-wrapper">
+            <span class="search-icon">⌕</span>
+
+            <input
+                type="text"
+                id="history-search-input"
+                class="history-search-input"
+                placeholder="Tìm theo mã giao dịch, người gửi hoặc người nhận..."
+                autocomplete="off"
+            >
+        </div>
+
+        <button
+            type="button"
+            id="clear-history-search"
+            class="clear-search-btn">
+            Xóa
+        </button>
+    </div>
+
+    <div id="history-search-count" class="history-search-count">
+        Hiển thị tất cả giao dịch
+    </div>
+
+    <div class="history-table-wrapper">
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Mã giao dịch</th>
+                    <th>Người gửi</th>
+                    <th>Người nhận</th>
+                    <th>Số tiền</th>
+                    <th>Thời gian</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+
+            <tbody id="transaction-history">
+                <tr>
+                    <td colspan="6" class="table-empty">
+                        Chưa có giao dịch nào được ghi nhận.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+
+        <!-- FOOTER -->
+        <footer class="result-footer">
+            <span>TRUEWALLET</span>
+            <span>Transaction Management System</span>
+        </footer>
+
+    </main>
+</div>
+</body>
+</html>
